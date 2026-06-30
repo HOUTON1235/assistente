@@ -1,0 +1,31 @@
+version: "3.9"
+
+# Compose simplificado para desenvolvimento local
+# Sobe apenas banco e cache — backend e frontend rodam direto na máquina
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: assistente_postgres
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: assistente_ia
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: assistente_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:

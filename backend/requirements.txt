@@ -1,0 +1,33 @@
+# Web Framework
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+
+# Banco de dados
+sqlalchemy==2.0.36
+asyncpg==0.30.0
+alembic==1.14.0
+
+# Validação
+pydantic==2.10.3
+pydantic-settings==2.6.1
+
+# Autenticação
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+
+# IA
+langchain==0.3.9
+langchain-openai==0.2.11
+langchain-core==0.3.24
+langgraph==0.2.56
+openai==1.57.2
+
+# Cache
+redis==5.2.1
+
+# HTTP
+httpx==0.28.1
+
+# Utilitários
+python-multipart==0.0.19
+python-dotenv==1.0.1
