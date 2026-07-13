@@ -52,3 +52,45 @@ async def listar_conversas(
     )
     conversas = result.scalars().all()
     return {"conversas": [{"id": c.id, "titulo": c.titulo, "canal": c.canal} for c in conversas]}
+
+
+@router.get("/conversa/{conversa_id}")
+async def detalhe_conversa(
+    conversa_id: str,
+    usuario=Depends(get_current_usuario),
+    db: AsyncSession = Depends(get_db),
+):
+    """Retorna mensagens de uma conversa específica."""
+    from sqlalchemy import select
+    from app.models.conversa import Conversa, Mensagem
+
+    result = await db.execute(
+        select(Conversa).where(
+            Conversa.id == conversa_id,
+            Conversa.empresa_id == usuario.empresa_id,
+        )
+    )
+    conversa = result.scalar_one_or_none()
+    if not conversa:
+        raise HTTPException(status_code=404, detail="Conversa não encontrada")
+
+    msgs = await db.execute(
+        select(Mensagem)
+        .where(Mensagem.conversa_id == conversa_id)
+        .order_by(Mensagem.criado_em.asc())
+        .limit(100)
+    )
+    mensagens = msgs.scalars().all()
+    return {
+        "id": conversa.id,
+        "canal": conversa.canal,
+        "mensagens": [
+            {
+                "id": m.id,
+                "role": m.role.value,
+                "conteudo": m.conteudo,
+                "criado_em": m.criado_em.isoformat(),
+            }
+            for m in mensagens
+        ],
+    }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Send, Bot, User } from "lucide-react";
+import { Send, Bot, User, History } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { api } from "@/lib/api";
 
@@ -13,23 +13,64 @@ interface Message {
 }
 
 export default function ChatInterface({ fullPage = false }: { fullPage?: boolean }) {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      role: "assistant",
-      content:
-        "Olá! Sou seu assistente administrativo. Posso ajudar com **finanças**, **estoque**, **clientes** e muito mais. Como posso ajudar hoje?",
-      timestamp: new Date(),
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [conversaId, setConversaId] = useState<string | null>(null);
+  const [carregandoHistorico, setCarregandoHistorico] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Carrega histórico da última conversa ao montar
+  useEffect(() => {
+    const carregar = async () => {
+      try {
+        const res = await api.get("/chat/historico");
+        const conversas = res.data.conversas;
+        if (conversas && conversas.length > 0) {
+          const ultima = conversas[0];
+          setConversaId(ultima.id);
+          // Carrega mensagens da conversa
+          const detRes = await api.get(`/chat/conversa/${ultima.id}`);
+          const msgs: Message[] = detRes.data.mensagens.map((m: any) => ({
+            id: m.id,
+            role: m.role,
+            content: m.conteudo,
+            timestamp: new Date(m.criado_em),
+          }));
+          if (msgs.length > 0) {
+            setMessages(msgs);
+          } else {
+            setMensagemBoasVindas();
+          }
+        } else {
+          setMensagemBoasVindas();
+        }
+      } catch {
+        setMensagemBoasVindas();
+      } finally {
+        setCarregandoHistorico(false);
+      }
+    };
+    carregar();
+  }, []);
+
+  const setMensagemBoasVindas = () => {
+    setMessages([{
+      id: "1",
+      role: "assistant",
+      content: "Olá! Sou seu assistente administrativo. Posso ajudar com **finanças**, **estoque**, **clientes** e muito mais. Como posso ajudar hoje?",
+      timestamp: new Date(),
+    }]);
+  };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  const novaConversa = () => {
+    setConversaId(null);
+    setMensagemBoasVindas();
+  };
 
   const enviarMensagem = async () => {
     if (!input.trim() || isLoading) return;
@@ -103,19 +144,33 @@ export default function ChatInterface({ fullPage = false }: { fullPage?: boolean
   return (
     <div className="flex flex-col h-full bg-[#1a1a1a]">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-[#2e2e2e] flex items-center gap-2">
-        <div className="w-8 h-8 rounded-full bg-indigo-500/20 flex items-center justify-center">
-          <Bot size={16} className="text-indigo-400" />
+      <div className="px-4 py-3 border-b border-[#2e2e2e] flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-full bg-indigo-500/20 flex items-center justify-center">
+            <Bot size={16} className="text-indigo-400" />
+          </div>
+          <div>
+            <p className="text-sm font-medium">Assistente IA</p>
+            <p className="text-xs text-green-400">● Online</p>
+          </div>
         </div>
-        <div>
-          <p className="text-sm font-medium">Assistente IA</p>
-          <p className="text-xs text-green-400">● Online</p>
-        </div>
+        <button onClick={novaConversa} title="Nova conversa"
+          className="p-1.5 rounded-lg hover:bg-white/10 text-gray-500 hover:text-gray-300 transition-colors">
+          <History size={15} />
+        </button>
       </div>
 
       {/* Mensagens */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message) => (
+        {carregandoHistorico ? (
+          <div className="flex justify-center pt-8">
+            <div className="flex gap-1">
+              <div className="w-2 h-2 rounded-full bg-gray-500 animate-bounce [animation-delay:0ms]" />
+              <div className="w-2 h-2 rounded-full bg-gray-500 animate-bounce [animation-delay:150ms]" />
+              <div className="w-2 h-2 rounded-full bg-gray-500 animate-bounce [animation-delay:300ms]" />
+            </div>
+          </div>
+        ) : messages.map((message) => (
           <div
             key={message.id}
             className={`flex gap-3 ${message.role === "user" ? "flex-row-reverse" : ""}`}

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Users, Search, Plus, Phone, Mail } from "lucide-react";
 import Sidebar from "@/components/layout/Sidebar";
+import ModalNovoCliente from "@/components/clientes/ModalNovoCliente";
 import { api } from "@/lib/api";
 
 interface Cliente {
@@ -18,10 +19,13 @@ export default function ClientesPage() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [busca, setBusca] = useState("");
   const [loading, setLoading] = useState(true);
+  const [modalAberto, setModalAberto] = useState(false);
 
-  useEffect(() => {
+  const carregar = () => {
     api.get("/clientes/").then((r) => setClientes(r.data)).catch(() => {}).finally(() => setLoading(false));
-  }, []);
+  };
+
+  useEffect(() => { carregar(); }, []);
 
   const filtrados = clientes.filter((c) =>
     c.nome.toLowerCase().includes(busca.toLowerCase()) ||
@@ -34,7 +38,8 @@ export default function ClientesPage() {
       <div className="flex-1 flex flex-col overflow-hidden">
         <header className="border-b border-[#2e2e2e] px-6 py-4 flex items-center justify-between">
           <h1 className="text-lg font-semibold">Clientes</h1>
-          <button className="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+          <button onClick={() => setModalAberto(true)}
+            className="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
             <Plus size={16} /> Novo cliente
           </button>
         </header>
@@ -95,6 +100,12 @@ export default function ClientesPage() {
           </div>
         </div>
       </div>
+
+      <ModalNovoCliente
+        aberto={modalAberto}
+        onFechar={() => setModalAberto(false)}
+        onCriado={carregar}
+      />
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Package, AlertTriangle, Plus, Search } from "lucide-react";
 import Sidebar from "@/components/layout/Sidebar";
+import ModalNovoProduto from "@/components/estoque/ModalNovoProduto";
 import { api } from "@/lib/api";
 
 interface Produto {
@@ -23,10 +24,13 @@ export default function EstoquePage() {
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [busca, setBusca] = useState("");
   const [loading, setLoading] = useState(true);
+  const [modalAberto, setModalAberto] = useState(false);
 
-  useEffect(() => {
+  const carregar = () => {
     api.get("/estoque/").then((r) => setProdutos(r.data)).catch(() => {}).finally(() => setLoading(false));
-  }, []);
+  };
+
+  useEffect(() => { carregar(); }, []);
 
   const filtrados = produtos.filter((p) =>
     p.nome.toLowerCase().includes(busca.toLowerCase())
@@ -47,7 +51,8 @@ export default function EstoquePage() {
               </span>
             )}
           </div>
-          <button className="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+          <button onClick={() => setModalAberto(true)}
+            className="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
             <Plus size={16} /> Novo produto
           </button>
         </header>

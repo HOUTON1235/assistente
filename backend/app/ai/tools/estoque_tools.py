@@ -32,6 +32,71 @@ async def criar_produto(
     return {"id": produto.id, "nome": nome, "quantidade": quantidade, "preco_venda": preco_venda}
 
 
+async def editar_produto(
+    db: AsyncSession,
+    empresa_id: str,
+    nome_produto: str,
+    novo_nome: str | None = None,
+    preco_venda: float | None = None,
+    preco_custo: float | None = None,
+    quantidade_minima: int | None = None,
+    unidade: str | None = None,
+) -> dict:
+    """Edita os dados de um produto existente."""
+    result = await db.execute(
+        select(Produto).where(
+            Produto.empresa_id == empresa_id,
+            Produto.nome.ilike(f"%{nome_produto}%"),
+            Produto.ativo == True,
+        ).limit(1)
+    )
+    produto = result.scalar_one_or_none()
+    if not produto:
+        return {"erro": f"Produto '{nome_produto}' não encontrado"}
+
+    if novo_nome is not None:
+        produto.nome = novo_nome
+    if preco_venda is not None:
+        produto.preco_venda = preco_venda
+    if preco_custo is not None:
+        produto.preco_custo = preco_custo
+    if quantidade_minima is not None:
+        produto.quantidade_minima = quantidade_minima
+    if unidade is not None:
+        produto.unidade = unidade
+
+    await db.flush()
+    return {
+        "nome": produto.nome,
+        "preco_venda": float(produto.preco_venda),
+        "quantidade_minima": produto.quantidade_minima,
+        "unidade": produto.unidade,
+        "mensagem": "Produto atualizado com sucesso",
+    }
+
+
+async def excluir_produto(
+    db: AsyncSession,
+    empresa_id: str,
+    nome_produto: str,
+) -> dict:
+    """Desativa um produto do estoque."""
+    result = await db.execute(
+        select(Produto).where(
+            Produto.empresa_id == empresa_id,
+            Produto.nome.ilike(f"%{nome_produto}%"),
+            Produto.ativo == True,
+        ).limit(1)
+    )
+    produto = result.scalar_one_or_none()
+    if not produto:
+        return {"erro": f"Produto '{nome_produto}' não encontrado"}
+
+    produto.ativo = False
+    await db.flush()
+    return {"mensagem": f"Produto '{produto.nome}' removido do estoque"}
+
+
 async def movimentar_estoque(
     db: AsyncSession,
     empresa_id: str,
@@ -87,7 +152,11 @@ async def movimentar_estoque(
     }
 
 
-async def consultar_estoque(db: AsyncSession, empresa_id: str, nome_produto: str | None = None) -> list:
+async def consultar_estoque(
+    db: AsyncSession,
+    empresa_id: str,
+    nome_produto: str | None = None,
+) -> list:
     """Consulta o estoque de produtos."""
     query = select(Produto).where(Produto.empresa_id == empresa_id, Produto.ativo == True)
     if nome_produto:
@@ -108,69 +177,7 @@ async def consultar_estoque(db: AsyncSession, empresa_id: str, nome_produto: str
     ]
 
 
-async def editar_produto(
-    db: AsyncSession,
-    empresa_id: str,
-    nome_produto: str,
-    novo_nome: str | None = None,
-    preco_venda: float | None = None,
-    preco_custo: float | None = None,
-    quantidade_minima: int | None = None,
-    unidade: str | None = None,
-) -> dict:
-    """Edita os dados de um produto existente."""
-    result = await db.execute(
-        select(Produto).where(
-            Produto.empresa_id == empresa_id,
-            Produto.nome.ilike(f"%{nome_produto}%"),
-            Produto.ativo == True,
-        ).limit(1)
-    )
-    produto = result.scalar_one_or_none()
-    if not produto:
-        return {"erro": f"Produto '{nome_produto}' não encontrado"}
-
-    if novo_nome is not None:
-        produto.nome = novo_nome
-    if preco_venda is not None:
-        produto.preco_venda = preco_venda
-    if preco_custo is not None:
-        produto.preco_custo = preco_custo
-    if quantidade_minima is not None:
-        produto.quantidade_minima = quantidade_minima
-    if unidade is not None:
-        produto.unidade = unidade
-
-    await db.flush()
-    return {
-        "nome": produto.nome,
-        "preco_venda": float(produto.preco_venda),
-        "quantidade_minima": produto.quantidade_minima,
-        "unidade": produto.unidade,
-        "mensagem": "Produto atualizado com sucesso",
-    }
-
-
-async def excluir_produto(
-    db: AsyncSession,
-    empresa_id: str,
-    nome_produto: str,
-) -> dict:
-    """Desativa (exclui) um produto do estoque."""
-    result = await db.execute(
-        select(Produto).where(
-            Produto.empresa_id == empresa_id,
-            Produto.nome.ilike(f"%{nome_produto}%"),
-            Produto.ativo == True,
-        ).limit(1)
-    )
-    produto = result.scalar_one_or_none()
-    if not produto:
-        return {"erro": f"Produto '{nome_produto}' não encontrado"}
-
-    produto.ativo = False
-    await db.flush()
-    return {"mensagem": f"Produto '{produto.nome}' removido do estoque"}
+async def alertas_estoque(db: AsyncSession, empresa_id: str) -> list:
     """Retorna produtos com estoque abaixo do mínimo."""
     result = await db.execute(
         select(Produto).where(
@@ -180,6 +187,11 @@ async def excluir_produto(
         )
     )
     return [
-        {"nome": p.nome, "quantidade": p.quantidade, "minimo": p.quantidade_minima, "unidade": p.unidade}
+        {
+            "nome": p.nome,
+            "quantidade": p.quantidade,
+            "minimo": p.quantidade_minima,
+            "unidade": p.unidade,
+        }
         for p in result.scalars().all()
     ]

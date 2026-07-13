@@ -8,16 +8,22 @@ class Settings(BaseSettings):
     VERSION: str = "1.0.0"
     ENVIRONMENT: str = "development"
 
+    # URLs
+    FRONTEND_URL: str = "http://localhost:3000"
+    BACKEND_URL: str = "http://localhost:8000"
+
     # API
     SECRET_KEY: str = "change-me-in-production"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 24 horas
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 dias
     ALGORITHM: str = "HS256"
+
+    # Admin
+    ADMIN_SECRET_KEY: str = "admin-secret-change-me"
 
     # CORS
     ALLOWED_ORIGINS: List[str] = [
         "http://localhost:3000",
         "http://127.0.0.1:3000",
-        "http://localhost:3001",
     ]
 
     # Banco de dados
@@ -26,18 +32,24 @@ class Settings(BaseSettings):
     # Redis
     REDIS_URL: str = "redis://localhost:6379"
 
-    # IA — Groq (gratuito)
+    # IA — Groq
     GROQ_API_KEY: str = ""
     GROQ_MODEL: str = "llama-3.3-70b-versatile"
 
-    # OpenAI (opcional, caso queira usar no futuro)
+    # OpenAI (opcional)
     OPENAI_API_KEY: str = ""
     OPENAI_MODEL: str = "gpt-4o"
 
-    # WhatsApp
-    WHATSAPP_TOKEN: str = ""
-    WHATSAPP_PHONE_ID: str = ""
-    WHATSAPP_VERIFY_TOKEN: str = ""
+    # Email — Resend
+    RESEND_API_KEY: str = ""
+    EMAIL_FROM: str = "Assistente IA <noreply@assistenteia.com.br>"
+
+    # Pagamentos — Mercado Pago
+    MERCADOPAGO_ACCESS_TOKEN: str = ""
+    MERCADOPAGO_PUBLIC_KEY: str = ""
+
+    # Trial
+    TRIAL_DIAS: int = 30
 
     class Config:
         env_file = ".env"

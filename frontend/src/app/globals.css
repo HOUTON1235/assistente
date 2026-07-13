@@ -3,13 +3,15 @@
 @tailwind utilities;
 
 :root {
-  --background: #0f0f0f;
-  --foreground: #f5f5f5;
-  --primary: #6366f1;
-  --primary-dark: #4f46e5;
-  --surface: #1a1a1a;
-  --surface-2: #252525;
-  --border: #2e2e2e;
+  --background: #0a0f1e;
+  --foreground: #f1f5f9;
+  --primary: #1e40af;
+  --primary-hover: #1d3a9f;
+  --accent: #f97316;
+  --accent-hover: #ea6c10;
+  --surface: #111827;
+  --surface-2: #1f2937;
+  --border: #1f2937;
   --muted: #6b7280;
 }
 
@@ -19,14 +21,21 @@ body {
   font-family: 'Inter', sans-serif;
 }
 
-/* Scrollbar customizada */
-::-webkit-scrollbar {
-  width: 6px;
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--surface); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #374151; }
+
+/* Animações */
+@keyframes slide-in-from-right-5 {
+  from { transform: translateX(20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
 }
-::-webkit-scrollbar-track {
-  background: var(--surface);
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
-::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 3px;
-}
+.animate-in { animation: slide-in-from-right-5 0.2s ease, fade-in 0.2s ease; }
+.slide-in-from-right-5 { animation: slide-in-from-right-5 0.2s ease; }
+.fade-in { animation: fade-in 0.2s ease; }

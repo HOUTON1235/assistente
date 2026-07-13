@@ -25,8 +25,12 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (typeof window !== "undefined" && error.response?.status === 401) {
-      localStorage.removeItem("access_token");
-      window.location.href = "/login";
+      if (!window.location.pathname.includes("/login")) {
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("plano");
+        localStorage.removeItem("trial_dias");
+        window.location.replace("/login");
+      }
     }
     return Promise.reject(error);
   }
