@@ -3,21 +3,18 @@
 @tailwind utilities;
 
 :root {
-  --background: #0a0f1e;
-  --foreground: #f1f5f9;
-  --primary: #1e40af;
-  --primary-hover: #1d3a9f;
-  --accent: #f97316;
-  --accent-hover: #ea6c10;
-  --surface: #111827;
+  --bg:        #0a0f1e;
+  --surface:   #111827;
   --surface-2: #1f2937;
-  --border: #1f2937;
-  --muted: #6b7280;
+  --border:    #1f2937;
+  --muted:     #6b7280;
+  --primary:   #1e40af;
+  --accent:    #f97316;
 }
 
 body {
-  background-color: var(--background);
-  color: var(--foreground);
+  background-color: var(--bg);
+  color: #f1f5f9;
   font-family: 'Inter', sans-serif;
 }
 
@@ -27,15 +24,24 @@ body {
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #374151; }
 
+/* Inputs — override autofill yellow */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #111827 inset;
+  -webkit-text-fill-color: #f1f5f9;
+  caret-color: #f1f5f9;
+}
+
 /* Animações */
-@keyframes slide-in-from-right-5 {
+@keyframes slide-in {
   from { transform: translateX(20px); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
+  to   { transform: translateX(0);    opacity: 1; }
 }
 @keyframes fade-in {
   from { opacity: 0; }
-  to { opacity: 1; }
+  to   { opacity: 1; }
 }
-.animate-in { animation: slide-in-from-right-5 0.2s ease, fade-in 0.2s ease; }
-.slide-in-from-right-5 { animation: slide-in-from-right-5 0.2s ease; }
-.fade-in { animation: fade-in 0.2s ease; }
+.animate-in          { animation: slide-in 0.2s ease, fade-in 0.2s ease; }
+.slide-in-from-right { animation: slide-in 0.2s ease; }
+.fade-in             { animation: fade-in 0.2s ease; }

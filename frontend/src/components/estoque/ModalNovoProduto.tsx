@@ -11,22 +11,22 @@ interface Props {
   onCriado: () => void;
 }
 
+const B = "#1f2937";
+const inputCls = "w-full rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 outline-none transition-all";
+const inp = { background: "#0a0f1e", border: `1px solid ${B}` };
+const focus = (e: React.FocusEvent<any>) => e.currentTarget.style.borderColor = "#f97316";
+const blur  = (e: React.FocusEvent<any>) => e.currentTarget.style.borderColor = B;
+
 export default function ModalNovoProduto({ aberto, onFechar, onCriado }: Props) {
   const [form, setForm] = useState({
-    nome: "",
-    preco_venda: "",
-    preco_custo: "",
-    quantidade: "0",
-    quantidade_minima: "5",
-    unidade: "un",
-    descricao: "",
+    nome: "", preco_venda: "", preco_custo: "",
+    quantidade: "0", quantidade_minima: "5", unidade: "un", descricao: "",
   });
   const [erro, setErro] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handle = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,42 +59,42 @@ export default function ModalNovoProduto({ aberto, onFechar, onCriado }: Props) 
     <Modal aberto={aberto} onFechar={onFechar} titulo="Novo produto">
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
-          <label className="block text-xs text-gray-400 mb-1">Nome *</label>
-          <input name="nome" value={form.nome} onChange={handleChange} required
+          <label className="block text-xs mb-1" style={{ color: "#9ca3af" }}>Nome *</label>
+          <input name="nome" value={form.nome} onChange={handle} required
             placeholder="Ex: Produto X, Serviço Y..."
-            className="w-full bg-[#252525] border border-[#3e3e3e] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500 transition-colors" />
+            className={inputCls} style={inp} onFocus={focus} onBlur={blur} />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs text-gray-400 mb-1">Preço de venda (R$) *</label>
-            <input name="preco_venda" value={form.preco_venda} onChange={handleChange} type="number" step="0.01" min="0.01" required
-              placeholder="0,00"
-              className="w-full bg-[#252525] border border-[#3e3e3e] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500 transition-colors" />
+            <label className="block text-xs mb-1" style={{ color: "#9ca3af" }}>Preço de venda (R$) *</label>
+            <input name="preco_venda" value={form.preco_venda} onChange={handle}
+              type="number" step="0.01" min="0.01" required placeholder="0,00"
+              className={inputCls} style={inp} onFocus={focus} onBlur={blur} />
           </div>
           <div>
-            <label className="block text-xs text-gray-400 mb-1">Preço de custo (R$)</label>
-            <input name="preco_custo" value={form.preco_custo} onChange={handleChange} type="number" step="0.01" min="0"
-              placeholder="0,00"
-              className="w-full bg-[#252525] border border-[#3e3e3e] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500 transition-colors" />
+            <label className="block text-xs mb-1" style={{ color: "#9ca3af" }}>Preço de custo (R$)</label>
+            <input name="preco_custo" value={form.preco_custo} onChange={handle}
+              type="number" step="0.01" min="0" placeholder="0,00"
+              className={inputCls} style={inp} onFocus={focus} onBlur={blur} />
           </div>
         </div>
 
         <div className="grid grid-cols-3 gap-3">
           <div>
-            <label className="block text-xs text-gray-400 mb-1">Qtd. inicial</label>
-            <input name="quantidade" value={form.quantidade} onChange={handleChange} type="number" min="0"
-              className="w-full bg-[#252525] border border-[#3e3e3e] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors" />
+            <label className="block text-xs mb-1" style={{ color: "#9ca3af" }}>Qtd. inicial</label>
+            <input name="quantidade" value={form.quantidade} onChange={handle} type="number" min="0"
+              className={inputCls} style={inp} onFocus={focus} onBlur={blur} />
           </div>
           <div>
-            <label className="block text-xs text-gray-400 mb-1">Estoque mínimo</label>
-            <input name="quantidade_minima" value={form.quantidade_minima} onChange={handleChange} type="number" min="0"
-              className="w-full bg-[#252525] border border-[#3e3e3e] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors" />
+            <label className="block text-xs mb-1" style={{ color: "#9ca3af" }}>Estoque mínimo</label>
+            <input name="quantidade_minima" value={form.quantidade_minima} onChange={handle} type="number" min="0"
+              className={inputCls} style={inp} onFocus={focus} onBlur={blur} />
           </div>
           <div>
-            <label className="block text-xs text-gray-400 mb-1">Unidade</label>
-            <select name="unidade" value={form.unidade} onChange={handleChange}
-              className="w-full bg-[#252525] border border-[#3e3e3e] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors">
+            <label className="block text-xs mb-1" style={{ color: "#9ca3af" }}>Unidade</label>
+            <select name="unidade" value={form.unidade} onChange={handle}
+              className={inputCls} style={inp}>
               {["un", "kg", "g", "l", "ml", "cx", "pc", "par", "m"].map(u => (
                 <option key={u} value={u}>{u}</option>
               ))}
@@ -103,21 +103,28 @@ export default function ModalNovoProduto({ aberto, onFechar, onCriado }: Props) 
         </div>
 
         <div>
-          <label className="block text-xs text-gray-400 mb-1">Descrição</label>
-          <textarea name="descricao" value={form.descricao} onChange={handleChange} rows={2}
+          <label className="block text-xs mb-1" style={{ color: "#9ca3af" }}>Descrição</label>
+          <textarea name="descricao" value={form.descricao} onChange={handle} rows={2}
             placeholder="Detalhes do produto..."
-            className="w-full bg-[#252525] border border-[#3e3e3e] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500 transition-colors resize-none" />
+            className={inputCls + " resize-none"} style={inp} onFocus={focus} onBlur={blur} />
         </div>
 
-        {erro && <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">{erro}</p>}
+        {erro && (
+          <p className="text-xs px-3 py-2 rounded-lg"
+            style={{ color: "#f87171", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)" }}>
+            {erro}
+          </p>
+        )}
 
         <div className="flex gap-2 pt-1">
           <button type="button" onClick={onFechar}
-            className="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 py-2 rounded-lg text-sm transition-colors">
+            className="flex-1 py-2 rounded-lg text-sm transition-all"
+            style={{ background: "transparent", border: `1px solid ${B}`, color: "#6b7280" }}>
             Cancelar
           </button>
           <button type="submit" disabled={loading}
-            className="flex-1 bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 text-white py-2 rounded-lg text-sm font-medium transition-colors">
+            className="flex-1 py-2 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50"
+            style={{ background: "linear-gradient(135deg, #1e40af, #f97316)" }}>
             {loading ? "Salvando..." : "Criar produto"}
           </button>
         </div>

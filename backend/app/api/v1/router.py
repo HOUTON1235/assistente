@@ -16,3 +16,4 @@ api_router.include_router(admin.router,          prefix="/admin",         tags=[
 api_router.include_router(conta.router,          prefix="/conta",         tags=["Conta"])
 api_router.include_router(relatorios.router,     prefix="/relatorios",    tags=["Relatórios"])
 api_router.include_router(notificacoes.router,   prefix="/notificacoes",  tags=["Notificações"])
+api_router.include_router(whatsapp.router,       prefix="/whatsapp",      tags=["WhatsApp"])

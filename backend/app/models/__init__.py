@@ -7,6 +7,8 @@ from app.models.conversa import Conversa, Mensagem, CanalEnum, RoleEnum
 from app.models.assinatura import Assinatura, StatusAssinaturaEnum
 from app.models.admin import Admin, PerfilAdminEnum
 from app.models.notificacao import Notificacao, TipoNotificacaoEnum
+from app.models.audit import AuditLog
+from app.models.whatsapp import WhatsappInstancia
 
 __all__ = [
     "Empresa", "PlanoEnum", "StatusEmpresaEnum",
@@ -17,4 +19,7 @@ __all__ = [
     "Conversa", "Mensagem", "CanalEnum", "RoleEnum",
     "Assinatura", "StatusAssinaturaEnum",
     "Admin", "PerfilAdminEnum",
+    "Notificacao", "TipoNotificacaoEnum",
+    "AuditLog",
+    "WhatsappInstancia",
 ]

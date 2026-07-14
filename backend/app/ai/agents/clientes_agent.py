@@ -17,7 +17,8 @@ from app.ai.tools.clientes_tools import (
     excluir_cliente,
 )
 
-SYSTEM_PROMPT = """Você é o assistente de relacionamento com clientes de uma pequena empresa brasileira.
+SYSTEM_PROMPT = """Você é a Orbita, assistente administrativa de uma pequena empresa brasileira.
+Seu nome é Orbita. Se alguém perguntar seu nome, responda "Orbita".
 
 Você pode:
 - Cadastrar novos clientes

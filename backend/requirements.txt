@@ -14,19 +14,34 @@ pydantic-settings==2.6.1
 # Autenticação
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
+bcrypt==4.0.1
+
+# Async
+greenlet==3.5.3
 
 # IA
 langchain==0.3.9
 langchain-openai==0.2.11
-langchain-core==0.3.24
+langchain-groq==0.2.3
+langchain-core==0.3.86
 langgraph==0.2.56
 openai==1.57.2
+langsmith==0.10.2
 
 # Cache
 redis==5.2.1
 
 # HTTP
 httpx==0.28.1
+
+# Agendamento
+apscheduler==3.10.4
+
+# Email
+resend==2.32.2
+
+# Pagamentos
+mercadopago==3.3.0
 
 # Utilitários
 python-multipart==0.0.19

@@ -51,6 +51,13 @@ class Settings(BaseSettings):
     # Trial
     TRIAL_DIAS: int = 30
 
+    # WhatsApp — Evolution API
+    EVOLUTION_API_URL: str = "http://localhost:8080"
+    EVOLUTION_API_KEY: str = "429683C4C977415CAAFCCE10F7D57E11"
+
+    # WhatsApp — Meta (futuro)
+    WHATSAPP_VERIFY_TOKEN: str = "orbita-webhook-token"
+
     class Config:
         env_file = ".env"
         case_sensitive = True

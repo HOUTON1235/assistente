@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from datetime import datetime, timezone, timedelta
@@ -8,6 +8,7 @@ import uuid
 
 from app.core.database import get_db
 from app.core.security import verify_password, get_password_hash, create_access_token
+from app.core.rate_limiter import login_rate_limit, api_rate_limit
 from app.core.config import settings
 from app.models.usuario import Usuario
 from app.models.empresa import Empresa, PlanoEnum, StatusEmpresaEnum
@@ -79,7 +80,11 @@ class ConsultarCEPRequest(BaseModel):
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 
 @router.post("/login", response_model=TokenResponse)
-async def login(payload: LoginRequest, db: AsyncSession = Depends(get_db)):
+async def login(payload: LoginRequest, request: Request, db: AsyncSession = Depends(get_db)):
+    # Rate limiting: 5 tentativas/email e 20/IP em 5 minutos
+    ip = request.client.host if request.client else "unknown"
+    await login_rate_limit(email=payload.email, ip=ip)
+
     result = await db.execute(select(Usuario).where(Usuario.email == payload.email))
     usuario = result.scalar_one_or_none()
 
@@ -109,12 +114,29 @@ async def login(payload: LoginRequest, db: AsyncSession = Depends(get_db)):
     )
 
 
+@router.post("/logout")
+async def logout(request: Request):
+    """Invalida o token adicionando à blacklist no Redis."""
+    from app.core.rate_limiter import blacklist_token
+    from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+    from app.core.config import settings
+    auth = request.headers.get("Authorization", "")
+    if auth.startswith("Bearer "):
+        token = auth.split(" ")[1]
+        await blacklist_token(token, expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60)
+    return {"mensagem": "Logout realizado com sucesso"}
+
+
 @router.post("/register", response_model=TokenResponse, status_code=201)
 async def register(
     payload: RegisterRequest,
+    request: Request,
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
 ):
+    # Rate limit: 5 registros por IP em 10 minutos
+    ip = request.client.host if request.client else "unknown"
+    await api_rate_limit(empresa_id=f"register:{ip}", endpoint="register", max_req=5, window=600)
     # Verificar email duplicado
     result = await db.execute(select(Usuario).where(Usuario.email == payload.email))
     if result.scalar_one_or_none():

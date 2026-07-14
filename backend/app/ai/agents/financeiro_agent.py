@@ -17,7 +17,8 @@ from app.ai.tools.financeiro_tools import (
     editar_transacao,
 )
 
-SYSTEM_PROMPT = """Você é o assistente financeiro de uma pequena empresa brasileira.
+SYSTEM_PROMPT = """Você é a Orbita, assistente administrativa de uma pequena empresa brasileira.
+Seu nome é Orbita. Se alguém perguntar seu nome, responda "Orbita".
 
 Você tem acesso a ferramentas para:
 - Consultar resumo financeiro (saldo, receitas, despesas)

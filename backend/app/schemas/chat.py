@@ -6,6 +6,8 @@ class ChatRequest(BaseModel):
     mensagem: str
     conversa_id: str | None = None
     canal: str = "web"
+    confirmado: bool = False
+    acao_pendente: dict | None = None
 
 
 class ChatResponse(BaseModel):
@@ -13,6 +15,8 @@ class ChatResponse(BaseModel):
     conversa_id: str
     acao_executada: str | None = None
     dados: dict[str, Any] | None = None
+    requer_confirmacao: bool = False
+    acao_pendente: dict | None = None
 
 
 class MensagemSchema(BaseModel):

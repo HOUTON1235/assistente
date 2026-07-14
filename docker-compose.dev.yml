@@ -1,7 +1,7 @@
 version: "3.9"
 
 # Compose simplificado para desenvolvimento local
-# Sobe apenas banco e cache — backend e frontend rodam direto na máquina
+# Sobe apenas banco, cache e Evolution API (WhatsApp)
 
 services:
   postgres:
@@ -26,6 +26,19 @@ services:
       - redis_data:/data
     restart: unless-stopped
 
+  wppconnect:
+    image: unilogica/wppconnect-server:2.8.6-7
+    container_name: assistente_wppconnect
+    ports:
+      - "8080:21465"
+    environment:
+      - SECRET_KEY=orbita-wpp-secret
+      - HOST=http://localhost:8080
+    volumes:
+      - wppconnect_data:/app/tokens
+    restart: unless-stopped
+
 volumes:
   postgres_data:
   redis_data:
+  wppconnect_data:

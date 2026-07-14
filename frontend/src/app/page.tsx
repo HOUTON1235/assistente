@@ -91,7 +91,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="text-center pb-8 text-xs text-gray-600" style={{ borderTop: "1px solid #1f2937" }}>
         <div className="pt-6">
-          <Logo size="sm" variant="icon" />
+          <Logo size="sm" />
           <p className="mt-2">© 2026 Orbita. Todos os direitos reservados.</p>
         </div>
       </footer>

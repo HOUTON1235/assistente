@@ -12,7 +12,6 @@ interface ModalProps {
 }
 
 export default function Modal({ aberto, onFechar, titulo, children, largura = "max-w-md" }: ModalProps) {
-  // Fechar com ESC
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onFechar(); };
     document.addEventListener("keydown", handler);
@@ -23,21 +22,20 @@ export default function Modal({ aberto, onFechar, titulo, children, largura = "m
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onFechar} />
-
-      {/* Modal */}
-      <div className={`relative w-full ${largura} bg-[#1a1a1a] border border-[#2e2e2e] rounded-2xl shadow-2xl`}>
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#2e2e2e]">
+      <div className={`relative w-full ${largura} rounded-2xl shadow-2xl`}
+        style={{ background: "#111827", border: "1px solid #1f2937" }}>
+        <div className="flex items-center justify-between px-5 py-4"
+          style={{ borderBottom: "1px solid #1f2937" }}>
           <h2 className="font-semibold text-white">{titulo}</h2>
           <button onClick={onFechar}
-            className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:bg-white/10 hover:text-white transition-colors">
+            className="w-7 h-7 rounded-lg flex items-center justify-center transition-all"
+            style={{ color: "#6b7280" }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#f1f5f9"; (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)"; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "#6b7280"; (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
             <X size={15} />
           </button>
         </div>
-
-        {/* Conteúdo */}
         <div className="p-5">{children}</div>
       </div>
     </div>

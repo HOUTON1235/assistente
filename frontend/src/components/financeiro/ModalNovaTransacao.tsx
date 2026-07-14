@@ -8,27 +8,30 @@ import { api } from "@/lib/api";
 interface Props {
   aberto: boolean;
   onFechar: () => void;
-  onCriada: () => void;
-  tipoInicial?: "receita" | "despesa";
+  onCriado: () => void;
 }
 
 const CATEGORIAS = ["vendas", "servicos", "aluguel", "salarios", "fornecedores", "impostos", "outros"];
 
-export default function ModalNovaTransacao({ aberto, onFechar, onCriada, tipoInicial = "receita" }: Props) {
+const S = "#111827";
+const B = "#1f2937";
+
+const inputCls = "w-full rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 outline-none transition-all";
+
+export default function ModalNovaTransacao({ aberto, onFechar, onCriado }: Props) {
   const [form, setForm] = useState({
-    tipo: tipoInicial,
+    tipo: "receita",
     descricao: "",
     valor: "",
     categoria: "outros",
     data_vencimento: "",
-    observacoes: "",
+    status: "pago",
   });
   const [erro, setErro] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handle = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,16 +41,19 @@ export default function ModalNovaTransacao({ aberto, onFechar, onCriada, tipoIni
     setLoading(true);
     try {
       await api.post("/financeiro/", {
-        ...form,
+        tipo: form.tipo,
+        descricao: form.descricao,
         valor: parseFloat(form.valor),
+        categoria: form.categoria,
+        status: form.status,
         data_vencimento: form.data_vencimento || undefined,
       });
-      setForm({ tipo: tipoInicial, descricao: "", valor: "", categoria: "outros", data_vencimento: "", observacoes: "" });
-      toast.sucesso(`${form.tipo === "receita" ? "Receita" : "Despesa"} registrada com sucesso!`);
-      onCriada();
+      setForm({ tipo: "receita", descricao: "", valor: "", categoria: "outros", data_vencimento: "", status: "pago" });
+      toast.sucesso("Transação registrada!");
+      onCriado();
       onFechar();
     } catch (err: any) {
-      const msg = err.response?.data?.detail || "Erro ao criar transação";
+      const msg = err.response?.data?.detail || "Erro ao registrar transação";
       setErro(msg);
       toast.erro(msg);
     } finally { setLoading(false); }
@@ -55,62 +61,89 @@ export default function ModalNovaTransacao({ aberto, onFechar, onCriada, tipoIni
 
   return (
     <Modal aberto={aberto} onFechar={onFechar} titulo="Nova transação">
-      <form onSubmit={handleSubmit} className="space-y-3">
-
+      <form onSubmit={handleSubmit} className="space-y-4">
         {/* Tipo */}
         <div className="flex gap-2">
           {(["receita", "despesa"] as const).map(t => (
-            <button key={t} type="button"
-              onClick={() => setForm(prev => ({ ...prev, tipo: t }))}
-              className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-colors capitalize ${
-                form.tipo === t
-                  ? t === "receita" ? "bg-green-500/15 border-green-500/40 text-green-400" : "bg-red-500/15 border-red-500/40 text-red-400"
-                  : "bg-transparent border-[#3e3e3e] text-gray-400 hover:border-gray-500"
-              }`}>
+            <button key={t} type="button" onClick={() => setForm(p => ({ ...p, tipo: t }))}
+              className="flex-1 py-2 rounded-lg text-sm font-medium transition-all capitalize"
+              style={{
+                background: form.tipo === t
+                  ? t === "receita" ? "rgba(74,222,128,0.15)" : "rgba(248,113,113,0.15)"
+                  : "transparent",
+                border: `1px solid ${form.tipo === t ? (t === "receita" ? "#4ade80" : "#f87171") : B}`,
+                color: form.tipo === t ? (t === "receita" ? "#4ade80" : "#f87171") : "#6b7280",
+              }}>
               {t === "receita" ? "↑ Receita" : "↓ Despesa"}
             </button>
           ))}
         </div>
 
+        {/* Descrição */}
         <div>
-          <label className="block text-xs text-gray-400 mb-1">Descrição *</label>
-          <input name="descricao" value={form.descricao} onChange={handleChange} required
+          <label className="block text-xs mb-1" style={{ color: "#9ca3af" }}>Descrição *</label>
+          <input name="descricao" value={form.descricao} onChange={handle} required
             placeholder="Ex: Venda de produto, Aluguel..."
-            className="w-full bg-[#252525] border border-[#3e3e3e] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500 transition-colors" />
+            className={inputCls} style={{ background: "#0a0f1e", border: `1px solid ${B}` }}
+            onFocus={e => e.currentTarget.style.borderColor = "#f97316"}
+            onBlur={e => e.currentTarget.style.borderColor = B} />
         </div>
 
+        {/* Valor + Categoria */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs text-gray-400 mb-1">Valor (R$) *</label>
-            <input name="valor" value={form.valor} onChange={handleChange} type="number" step="0.01" min="0.01" required
+            <label className="block text-xs mb-1" style={{ color: "#9ca3af" }}>Valor (R$) *</label>
+            <input name="valor" value={form.valor} onChange={handle} type="number" step="0.01" min="0.01" required
               placeholder="0,00"
-              className="w-full bg-[#252525] border border-[#3e3e3e] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500 transition-colors" />
+              className={inputCls} style={{ background: "#0a0f1e", border: `1px solid ${B}` }}
+              onFocus={e => e.currentTarget.style.borderColor = "#f97316"}
+              onBlur={e => e.currentTarget.style.borderColor = B} />
           </div>
           <div>
-            <label className="block text-xs text-gray-400 mb-1">Categoria</label>
-            <select name="categoria" value={form.categoria} onChange={handleChange}
-              className="w-full bg-[#252525] border border-[#3e3e3e] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors">
-              {CATEGORIAS.map(c => <option key={c} value={c} className="capitalize">{c}</option>)}
+            <label className="block text-xs mb-1" style={{ color: "#9ca3af" }}>Categoria</label>
+            <select name="categoria" value={form.categoria} onChange={handle}
+              className={inputCls} style={{ background: "#0a0f1e", border: `1px solid ${B}` }}>
+              {CATEGORIAS.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
         </div>
 
-        <div>
-          <label className="block text-xs text-gray-400 mb-1">Vencimento</label>
-          <input name="data_vencimento" value={form.data_vencimento} onChange={handleChange} type="date"
-            className="w-full bg-[#252525] border border-[#3e3e3e] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors [color-scheme:dark]" />
+        {/* Status + Vencimento */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs mb-1" style={{ color: "#9ca3af" }}>Status</label>
+            <select name="status" value={form.status} onChange={handle}
+              className={inputCls} style={{ background: "#0a0f1e", border: `1px solid ${B}` }}>
+              <option value="pago">Pago</option>
+              <option value="pendente">Pendente</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs mb-1" style={{ color: "#9ca3af" }}>Vencimento</label>
+            <input name="data_vencimento" value={form.data_vencimento} onChange={handle} type="date"
+              className={inputCls} style={{ background: "#0a0f1e", border: `1px solid ${B}`, colorScheme: "dark" }}
+              onFocus={e => e.currentTarget.style.borderColor = "#f97316"}
+              onBlur={e => e.currentTarget.style.borderColor = B} />
+          </div>
         </div>
 
-        {erro && <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">{erro}</p>}
+        {erro && (
+          <p className="text-xs px-3 py-2 rounded-lg"
+            style={{ color: "#f87171", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)" }}>
+            {erro}
+          </p>
+        )}
 
         <div className="flex gap-2 pt-1">
           <button type="button" onClick={onFechar}
-            className="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 py-2 rounded-lg text-sm transition-colors">
+            className="flex-1 py-2 rounded-lg text-sm transition-all"
+            style={{ background: "transparent", border: `1px solid ${B}`, color: "#6b7280" }}>
             Cancelar
           </button>
           <button type="submit" disabled={loading}
-            className="flex-1 bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 text-white py-2 rounded-lg text-sm font-medium transition-colors">
-            {loading ? "Salvando..." : "Criar transação"}
+            className="flex-1 py-2 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50"
+            style={{ background: "linear-gradient(135deg, #1e40af, #f97316)" }}>
+            {loading ? "Salvando..." : "Registrar"}
           </button>
         </div>
       </form>

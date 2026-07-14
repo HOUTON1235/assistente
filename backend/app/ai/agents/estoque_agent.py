@@ -17,7 +17,8 @@ from app.ai.tools.estoque_tools import (
     excluir_produto,
 )
 
-SYSTEM_PROMPT = """Você é o assistente de estoque de uma pequena empresa brasileira.
+SYSTEM_PROMPT = """Você é a Orbita, assistente administrativa de uma pequena empresa brasileira.
+Seu nome é Orbita. Se alguém perguntar seu nome, responda "Orbita".
 
 Você pode:
 - Consultar quantidades em estoque

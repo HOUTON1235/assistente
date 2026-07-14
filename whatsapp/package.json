@@ -1,0 +1,17 @@
+{
+  "name": "orbita-whatsapp",
+  "version": "1.0.0",
+  "description": "Servidor WhatsApp Baileys para Orbita",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.7.16",
+    "express": "^4.18.2",
+    "qrcode": "^1.5.3",
+    "pino": "^8.21.0",
+    "axios": "^1.7.9"
+  }
+}

@@ -40,6 +40,18 @@ async def resumo_financeiro(
         )
     )
 
+    from datetime import datetime, timezone, timedelta
+    agora = datetime.now(timezone.utc)
+    a_vencer = await db.execute(
+        select(func.count()).where(
+            Transacao.empresa_id == empresa_id,
+            Transacao.status == StatusTransacaoEnum.pendente,
+            Transacao.data_vencimento != None,
+            Transacao.data_vencimento <= agora + timedelta(days=7),
+            Transacao.data_vencimento >= agora,
+        )
+    )
+
     total_receitas = receitas.scalar() or 0.0
     total_despesas = despesas.scalar() or 0.0
 
@@ -48,7 +60,7 @@ async def resumo_financeiro(
         total_despesas=float(total_despesas),
         saldo=float(total_receitas - total_despesas),
         contas_vencidas=vencidas.scalar() or 0,
-        contas_a_vencer=0,  # TODO: calcular com base em data_vencimento
+        contas_a_vencer=a_vencer.scalar() or 0,
     )
 
 

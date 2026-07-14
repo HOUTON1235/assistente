@@ -27,6 +27,7 @@ class Conversa(Base):
     usuario_id: Mapped[str | None] = mapped_column(ForeignKey("usuarios.id"), nullable=True)
     canal: Mapped[CanalEnum] = mapped_column(Enum(CanalEnum), default=CanalEnum.web)
     titulo: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    summary: Mapped[str | None] = mapped_column(Text, nullable=True)   # Camada 3 de memória
     criado_em: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     mensagens: Mapped[list["Mensagem"]] = relationship("Mensagem", back_populates="conversa", order_by="Mensagem.criado_em")

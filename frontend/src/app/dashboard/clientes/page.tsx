@@ -6,6 +6,10 @@ import Sidebar from "@/components/layout/Sidebar";
 import ModalNovoCliente from "@/components/clientes/ModalNovoCliente";
 import { api } from "@/lib/api";
 
+const BG   = "#0a0f1e";
+const SURF = "#111827";
+const BORD = "#1f2937";
+
 interface Cliente {
   id: string;
   nome: string;
@@ -21,67 +25,88 @@ export default function ClientesPage() {
   const [loading, setLoading] = useState(true);
   const [modalAberto, setModalAberto] = useState(false);
 
-  const carregar = () => {
-    api.get("/clientes/").then((r) => setClientes(r.data)).catch(() => {}).finally(() => setLoading(false));
-  };
+  const carregar = () =>
+    api.get("/clientes/").then(r => setClientes(r.data)).catch(() => {}).finally(() => setLoading(false));
 
   useEffect(() => { carregar(); }, []);
 
-  const filtrados = clientes.filter((c) =>
+  const filtrados = clientes.filter(c =>
     c.nome.toLowerCase().includes(busca.toLowerCase()) ||
     (c.email || "").toLowerCase().includes(busca.toLowerCase())
   );
 
   return (
-    <div className="flex h-screen bg-[#0f0f0f] text-white overflow-hidden">
+    <div className="flex h-screen overflow-hidden" style={{ background: BG, color: "#f1f5f9" }}>
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="border-b border-[#2e2e2e] px-6 py-4 flex items-center justify-between">
-          <h1 className="text-lg font-semibold">Clientes</h1>
-          <button onClick={() => setModalAberto(true)}
-            className="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-            <Plus size={16} /> Novo cliente
+        {/* Header */}
+        <header className="px-6 py-4 flex items-center justify-between flex-shrink-0"
+          style={{ borderBottom: `1px solid ${BORD}` }}>
+          <div>
+            <h1 className="text-lg font-semibold text-white">Clientes</h1>
+            <p className="text-xs mt-0.5" style={{ color: "#6b7280" }}>
+              {clientes.length} {clientes.length === 1 ? "cliente cadastrado" : "clientes cadastrados"}
+            </p>
+          </div>
+          <button
+            onClick={() => setModalAberto(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white transition-all hover:opacity-90"
+            style={{ background: "linear-gradient(135deg, #1e40af, #f97316)" }}>
+            <Plus size={15} /> Novo cliente
           </button>
         </header>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
           {/* Busca */}
-          <div className="flex items-center gap-2 bg-[#1a1a1a] border border-[#2e2e2e] rounded-lg px-3 py-2 focus-within:border-indigo-500/50 transition-colors">
-            <Search size={16} className="text-gray-500" />
+          <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg"
+            style={{ background: SURF, border: `1px solid ${BORD}` }}>
+            <Search size={15} style={{ color: "#6b7280" }} />
             <input
               value={busca}
-              onChange={(e) => setBusca(e.target.value)}
-              placeholder="Buscar clientes..."
-              className="flex-1 bg-transparent text-sm text-white placeholder-gray-500 outline-none"
+              onChange={e => setBusca(e.target.value)}
+              placeholder="Buscar por nome ou e-mail..."
+              className="flex-1 bg-transparent text-sm text-white outline-none placeholder-gray-600"
             />
           </div>
 
           {/* Lista */}
-          <div className="bg-[#1a1a1a] border border-[#2e2e2e] rounded-xl overflow-hidden">
+          <div className="rounded-xl overflow-hidden" style={{ background: SURF, border: `1px solid ${BORD}` }}>
             {loading ? (
               <div className="p-6 space-y-3">
-                {[...Array(5)].map((_, i) => <div key={i} className="h-14 bg-[#252525] rounded animate-pulse" />)}
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="h-14 rounded-lg animate-pulse" style={{ background: BORD }} />
+                ))}
               </div>
             ) : filtrados.length === 0 ? (
-              <div className="p-12 text-center text-gray-500">
+              <div className="p-12 text-center" style={{ color: "#6b7280" }}>
                 <Users size={40} className="mx-auto mb-3 opacity-30" />
-                <p>{busca ? "Nenhum cliente encontrado" : "Nenhum cliente cadastrado ainda"}</p>
+                <p className="font-medium">{busca ? "Nenhum cliente encontrado" : "Nenhum cliente cadastrado ainda"}</p>
                 <p className="text-sm mt-1">Use o chat para cadastrar clientes rapidamente</p>
               </div>
             ) : (
-              <div className="divide-y divide-[#2e2e2e]">
-                {filtrados.map((c) => (
-                  <div key={c.id} className="flex items-center justify-between px-6 py-4 hover:bg-[#252525] transition-colors">
+              <div>
+                {filtrados.map((c, i) => (
+                  <div
+                    key={c.id}
+                    className="flex items-center justify-between px-6 py-4 transition-colors cursor-pointer"
+                    style={{ borderBottom: i < filtrados.length - 1 ? `1px solid ${BORD}` : "none" }}
+                    onMouseEnter={e => (e.currentTarget.style.background = BORD)}
+                    onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                  >
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 font-medium text-sm">
+                      {/* Avatar com gradiente */}
+                      <div
+                        className="w-9 h-9 rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0"
+                        style={{ background: "linear-gradient(135deg, #1e40af, #f97316)" }}
+                      >
                         {c.nome.charAt(0).toUpperCase()}
                       </div>
                       <div>
-                        <p className="text-sm font-medium">{c.nome}</p>
-                        {c.cpf_cnpj && <p className="text-xs text-gray-500">{c.cpf_cnpj}</p>}
+                        <p className="text-sm font-medium text-white">{c.nome}</p>
+                        {c.cpf_cnpj && <p className="text-xs" style={{ color: "#6b7280" }}>{c.cpf_cnpj}</p>}
                       </div>
                     </div>
-                    <div className="flex items-center gap-4 text-sm text-gray-400">
+                    <div className="flex items-center gap-5 text-sm" style={{ color: "#6b7280" }}>
                       {c.email && (
                         <span className="flex items-center gap-1.5">
                           <Mail size={13} /> {c.email}
@@ -101,11 +126,7 @@ export default function ClientesPage() {
         </div>
       </div>
 
-      <ModalNovoCliente
-        aberto={modalAberto}
-        onFechar={() => setModalAberto(false)}
-        onCriado={carregar}
-      />
+      <ModalNovoCliente aberto={modalAberto} onFechar={() => setModalAberto(false)} onCriado={carregar} />
     </div>
   );
 }

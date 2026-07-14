@@ -1,15 +1,15 @@
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from jose import JWTError
+from datetime import datetime, timezone
 
 from app.core.database import get_db
 from app.core.security import decode_token
 from app.models.usuario import Usuario
 from app.models.empresa import Empresa, PlanoEnum, StatusEmpresaEnum
 from app.models.admin import Admin
-from datetime import datetime, timezone
 
 bearer_scheme = HTTPBearer()
 
@@ -25,12 +25,23 @@ async def get_current_usuario(
     )
 
     try:
-        payload = decode_token(credentials.credentials)
+        token = credentials.credentials
+        payload = decode_token(token)
         usuario_id: str = payload.get("sub")
         if not usuario_id or usuario_id.startswith("admin:"):
             raise credentials_exception
     except JWTError:
         raise credentials_exception
+
+    # Verifica blacklist
+    try:
+        from app.core.rate_limiter import is_token_blacklisted
+        if await is_token_blacklisted(token):
+            raise credentials_exception
+    except HTTPException:
+        raise
+    except Exception:
+        pass  # Redis offline? Deixa passar
 
     result = await db.execute(select(Usuario).where(Usuario.id == usuario_id))
     usuario = result.scalar_one_or_none()
@@ -38,7 +49,7 @@ async def get_current_usuario(
     if not usuario or not usuario.ativo:
         raise credentials_exception
 
-    # Verificar se empresa está ativa ou em trial
+    # Verifica empresa
     empresa = await db.get(Empresa, usuario.empresa_id)
     if empresa:
         if empresa.plano == PlanoEnum.trial:
