@@ -54,6 +54,15 @@ class RegisterRequest(BaseModel):
     cep: str | None = None
     numero: str | None = None
     complemento: str | None = None
+    # Segmento e negócio
+    segmento: str | None = None
+    descricao_negocio: str | None = None
+    horario_funcionamento: str | None = None
+    formas_pagamento: str | None = None
+    aceita_delivery: bool = False
+    aceita_retirada: bool = True
+    taxa_entrega: float | None = None
+    tempo_entrega: str | None = None
 
 
 class EsqueciSenhaRequest(BaseModel):
@@ -183,6 +192,15 @@ async def register(
         bairro=endereco.get("bairro"),
         cidade=endereco.get("cidade"),
         estado=endereco.get("estado"),
+        # Segmento do negócio
+        segmento=payload.segmento,
+        descricao_negocio=payload.descricao_negocio,
+        horario_funcionamento=payload.horario_funcionamento,
+        formas_pagamento=payload.formas_pagamento,
+        aceita_delivery=payload.aceita_delivery,
+        aceita_retirada=payload.aceita_retirada,
+        taxa_entrega=payload.taxa_entrega,
+        tempo_entrega=payload.tempo_entrega,
     )
     db.add(empresa)
     await db.flush()

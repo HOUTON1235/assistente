@@ -9,6 +9,7 @@ from app.models.admin import Admin, PerfilAdminEnum
 from app.models.notificacao import Notificacao, TipoNotificacaoEnum
 from app.models.audit import AuditLog
 from app.models.whatsapp import WhatsappInstancia
+from app.models.wa_mensagem import WaMensagem
 
 __all__ = [
     "Empresa", "PlanoEnum", "StatusEmpresaEnum",
@@ -22,4 +23,5 @@ __all__ = [
     "Notificacao", "TipoNotificacaoEnum",
     "AuditLog",
     "WhatsappInstancia",
+    "WaMensagem",
 ]

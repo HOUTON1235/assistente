@@ -4,18 +4,18 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import {
   LayoutDashboard, MessageSquare, Users, Package,
-  DollarSign, Settings, LogOut, BarChart2, CreditCard, Bot,
+  DollarSign, Settings, LogOut, BarChart2, CreditCard, Bot, Phone,
 } from "lucide-react";
 
 const navItems = [
-  { href: "/dashboard",                     label: "Dashboard",   icon: LayoutDashboard },
-  { href: "/dashboard/chat",                label: "Chat IA",     icon: MessageSquare },
-  { href: "/dashboard/clientes",            label: "Clientes",    icon: Users },
-  { href: "/dashboard/estoque",             label: "Estoque",     icon: Package },
-  { href: "/dashboard/financeiro",          label: "Financeiro",  icon: DollarSign },
-  { href: "/dashboard/relatorios",          label: "Relatórios",  icon: BarChart2 },
-  { href: "/dashboard/configuracoes/planos",label: "Planos",      icon: CreditCard },
-  { href: "/dashboard/configuracoes/whatsapp", label: "WhatsApp", icon: MessageSquare },
+  { href: "/dashboard",                        label: "Dashboard",  icon: LayoutDashboard },
+  { href: "/dashboard/chat",                   label: "Chat IA",    icon: MessageSquare },
+  { href: "/dashboard/whatsapp",               label: "WhatsApp",   icon: Phone },
+  { href: "/dashboard/clientes",               label: "Clientes",   icon: Users },
+  { href: "/dashboard/estoque",                label: "Estoque",    icon: Package },
+  { href: "/dashboard/financeiro",             label: "Financeiro", icon: DollarSign },
+  { href: "/dashboard/relatorios",             label: "Relatórios", icon: BarChart2 },
+  { href: "/dashboard/configuracoes/planos",   label: "Planos",     icon: CreditCard },
 ];
 
 export default function Sidebar() {

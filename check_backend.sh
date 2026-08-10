@@ -1,4 +1,4 @@
-#!/bin/bash
+va#!/bin/bash
 export PYTHONPATH=/Users/ifmatimontimon/Documents/assistente/backend
 
 PYTHON=/Users/ifmatimontimon/Documents/assistente/backend/venv/bin/python

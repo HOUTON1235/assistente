@@ -64,9 +64,22 @@ async def configurar_webhook(instancia: str, webhook_url: str) -> dict:
 
 
 async def enviar_texto(instancia: str, numero: str, mensagem: str) -> dict:
-    numero_limpo = "".join(filter(str.isdigit, numero))
-    dados = await _post("/mensagem/enviar", {"numero": numero_limpo, "mensagem": mensagem})
-    logger.info(f"[WA] Enviado para {numero_limpo}: {str(dados)[:80]}")
+    """
+    Envia mensagem de texto.
+    Aceita tanto número normal (5511999...) quanto JID completo (5511999...@s.whatsapp.net ou @lid).
+    """
+    # Se já é um JID completo com @, mantém como está
+    if "@" in numero:
+        jid = numero
+        numero_log = numero.split("@")[0]
+    else:
+        # Remove não-dígitos e monta o JID
+        numero_limpo = "".join(filter(str.isdigit, numero))
+        jid = numero_limpo
+        numero_log = numero_limpo
+
+    dados = await _post("/mensagem/enviar", {"numero": jid, "mensagem": mensagem})
+    logger.info(f"[WA] Enviado para {numero_log}: {str(dados)[:80]}")
     return dados
 
 

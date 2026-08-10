@@ -59,6 +59,16 @@ class Empresa(Base):
 
     ativo: Mapped[bool] = mapped_column(Boolean, default=True)
     configuracoes: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    # Segmento da empresa (usado pelo agente WhatsApp para adaptar o atendimento)
+    segmento: Mapped[str | None] = mapped_column(String(100), nullable=True)       # ex: "hamburgueria", "loja_roupas"
+    descricao_negocio: Mapped[str | None] = mapped_column(Text, nullable=True)     # descrição livre do negócio
+    horario_funcionamento: Mapped[str | None] = mapped_column(String(200), nullable=True)  # ex: "Seg-Sex 9h-18h"
+    taxa_entrega: Mapped[float | None] = mapped_column(nullable=True)              # para delivery
+    tempo_entrega: Mapped[str | None] = mapped_column(String(50), nullable=True)   # ex: "30-45 min"
+    aceita_delivery: Mapped[bool] = mapped_column(Boolean, default=False)
+    aceita_retirada: Mapped[bool] = mapped_column(Boolean, default=True)
+    formas_pagamento: Mapped[str | None] = mapped_column(String(200), nullable=True)  # ex: "Pix, cartão, dinheiro"
     criado_em: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     atualizado_em: Mapped[DateTime | None] = mapped_column(DateTime(timezone=True), nullable=True, onupdate=func.now())
 

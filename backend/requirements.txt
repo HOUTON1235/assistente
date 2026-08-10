@@ -37,6 +37,9 @@ httpx==0.28.1
 # Agendamento
 apscheduler==3.10.4
 
+# Timezone
+pytz==2026.2
+
 # Email
 resend==2.32.2
 

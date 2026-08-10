@@ -33,6 +33,15 @@ class AtualizarEmpresaRequest(BaseModel):
     bairro: Optional[str] = None
     cidade: Optional[str] = None
     estado: Optional[str] = None
+    # Segmento e negócio
+    segmento: Optional[str] = None
+    descricao_negocio: Optional[str] = None
+    horario_funcionamento: Optional[str] = None
+    formas_pagamento: Optional[str] = None
+    aceita_delivery: Optional[bool] = None
+    aceita_retirada: Optional[bool] = None
+    taxa_entrega: Optional[float] = None
+    tempo_entrega: Optional[str] = None
 
 
 @router.get("/perfil")
