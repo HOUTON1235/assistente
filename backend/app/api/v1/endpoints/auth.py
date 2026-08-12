@@ -290,17 +290,16 @@ async def register(
     )
     db.add(assinatura)
 
-    # Token de verificação de email
+    # Criar usuário admin — email_verificado=True para não bloquear o login
+    # (Email de boas-vindas é enviado como notificação, não como bloqueio)
     token_verificacao = secrets.token_urlsafe(32)
-
-    # Criar usuário admin
     usuario = Usuario(
         empresa_id=empresa.id,
         nome=payload.nome,
         email=payload.email,
         senha_hash=get_password_hash(payload.senha),
         perfil="admin",
-        email_verificado=False,
+        email_verificado=True,
         email_token_verificacao=token_verificacao,
     )
     db.add(usuario)
@@ -321,7 +320,7 @@ async def register(
         usuario_id=usuario.id,
         empresa_id=empresa.id,
         perfil="admin",
-        email_verificado=False,
+        email_verificado=True,
         plano="trial",
         trial_dias_restantes=settings.TRIAL_DIAS,
     )
