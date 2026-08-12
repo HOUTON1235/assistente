@@ -40,9 +40,13 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str = ""
     OPENAI_MODEL: str = "gpt-4o"
 
-    # Email — Resend
+    # Email — Gmail SMTP (grátis)
+    GMAIL_USER: str = ""          # seu@gmail.com
+    GMAIL_APP_PASSWORD: str = ""  # senha de app do Gmail (não é a senha normal)
+
+    # Email — Resend (legado)
     RESEND_API_KEY: str = ""
-    EMAIL_FROM: str = "Assistente IA <noreply@assistenteia.com.br>"
+    EMAIL_FROM: str = "Orbita <noreply@orbita.app>"
 
     # Pagamentos — Mercado Pago
     MERCADOPAGO_ACCESS_TOKEN: str = ""
