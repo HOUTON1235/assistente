@@ -107,6 +107,37 @@ class GoogleLoginRequest(BaseModel):
     foto: str | None = None
 
 
+@router.post("/login", response_model=TokenResponse)
+async def login(payload: LoginRequest, request: Request, db: AsyncSession = Depends(get_db)):
+    ip = request.client.host if request.client else "unknown"
+    await login_rate_limit(email=payload.email, ip=ip)
+
+    result = await db.execute(select(Usuario).where(Usuario.email == payload.email))
+    usuario = result.scalar_one_or_none()
+
+    if not usuario or not verify_password(payload.senha, usuario.senha_hash):
+        raise HTTPException(status_code=401, detail="E-mail ou senha incorretos")
+
+    if not usuario.ativo:
+        raise HTTPException(status_code=403, detail="Conta desativada")
+
+    usuario.ultimo_acesso = datetime.now(timezone.utc)
+    await db.flush()
+
+    empresa = await db.get(Empresa, usuario.empresa_id)
+    token = create_access_token(subject=usuario.id)
+
+    return TokenResponse(
+        access_token=token,
+        usuario_id=usuario.id,
+        empresa_id=usuario.empresa_id,
+        perfil=usuario.perfil.value,
+        email_verificado=usuario.email_verificado,
+        plano=empresa.plano.value if empresa else "trial",
+        trial_dias_restantes=empresa.trial_dias_restantes if empresa else 0,
+    )
+
+
 @router.post("/google", response_model=TokenResponse, status_code=200)
 async def login_google(
     payload: GoogleLoginRequest,
