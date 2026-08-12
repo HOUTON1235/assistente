@@ -55,7 +55,7 @@ export default function WhatsappPage() {
   }, []);
 
   const carregarTudo = useCallback(async () => {
-    try {
+    try 
       const [r1, r2] = await Promise.all([
         api.get("/whatsapp/configuracoes"),
         api.get("/conta/perfil"),

@@ -17,6 +17,7 @@ from app.services.email_service import (
     enviar_verificacao_email,
     enviar_reset_senha,
     enviar_boas_vindas_trial,
+    enviar_codigo_reset,
 )
 from app.services.validacao_service import validar_cnpj, buscar_cep, validar_cpf
 
@@ -69,6 +70,17 @@ class EsqueciSenhaRequest(BaseModel):
     email: EmailStr
 
 
+class VerificarCodigoRequest(BaseModel):
+    email: EmailStr
+    codigo: str
+
+
+class NovaSenhaComCodigoRequest(BaseModel):
+    email: EmailStr
+    codigo: str
+    nova_senha: str
+
+
 class NovaSenhaRequest(BaseModel):
     token: str
     nova_senha: str
@@ -88,7 +100,70 @@ class ConsultarCEPRequest(BaseModel):
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 
-@router.post("/login", response_model=TokenResponse)
+class GoogleLoginRequest(BaseModel):
+    email: EmailStr
+    nome: str
+    google_id: str
+    foto: str | None = None
+
+
+@router.post("/google", response_model=TokenResponse, status_code=200)
+async def login_google(
+    payload: GoogleLoginRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """Login/registro via Google OAuth."""
+    # Busca usuário existente
+    result = await db.execute(select(Usuario).where(Usuario.email == payload.email))
+    usuario = result.scalar_one_or_none()
+
+    if not usuario:
+        # Cria empresa e usuário automaticamente
+        trial_expira = datetime.now(timezone.utc) + timedelta(days=settings.TRIAL_DIAS)
+        empresa = Empresa(
+            nome=payload.nome,
+            email=payload.email,
+            plano=PlanoEnum.trial,
+            status=StatusEmpresaEnum.trial,
+            trial_expira_em=trial_expira,
+            max_usuarios=1,
+            max_transacoes_mes=500,
+        )
+        db.add(empresa)
+        await db.flush()
+
+        usuario = Usuario(
+            empresa_id=empresa.id,
+            nome=payload.nome,
+            email=payload.email,
+            senha_hash=get_password_hash(secrets.token_urlsafe(32)),
+            perfil="admin",
+            email_verificado=True,  # Google já verificou
+        )
+        db.add(usuario)
+        await db.flush()
+
+    if not usuario.ativo:
+        raise HTTPException(status_code=403, detail="Conta desativada")
+
+    usuario.ultimo_acesso = datetime.now(timezone.utc)
+    await db.flush()
+
+    empresa = await db.get(Empresa, usuario.empresa_id)
+    token = create_access_token(subject=usuario.id)
+
+    return TokenResponse(
+        access_token=token,
+        usuario_id=usuario.id,
+        empresa_id=usuario.empresa_id,
+        perfil=usuario.perfil.value,
+        email_verificado=True,
+        plano=empresa.plano.value if empresa else "trial",
+        trial_dias_restantes=empresa.trial_dias_restantes if empresa else 0,
+    )
+
+
+
 async def login(payload: LoginRequest, request: Request, db: AsyncSession = Depends(get_db)):
     # Rate limiting: 5 tentativas/email e 20/IP em 5 minutos
     ip = request.client.host if request.client else "unknown"
@@ -276,15 +351,58 @@ async def esqueci_senha(
     result = await db.execute(select(Usuario).where(Usuario.email == payload.email))
     usuario = result.scalar_one_or_none()
 
-    # Sempre retorna sucesso por segurança (não revela se email existe)
     if usuario and usuario.ativo:
-        token = secrets.token_urlsafe(32)
-        usuario.reset_senha_token = token
+        # Gera código de 6 dígitos
+        codigo = str(secrets.randbelow(900000) + 100000)
+        usuario.reset_senha_token = codigo
         usuario.reset_senha_expira = datetime.now(timezone.utc) + timedelta(hours=1)
         await db.flush()
-        background_tasks.add_task(enviar_reset_senha, usuario.email, usuario.nome, token)
+        background_tasks.add_task(enviar_codigo_reset, usuario.email, usuario.nome, codigo)
 
-    return {"mensagem": "Se o e-mail estiver cadastrado, você receberá as instruções em breve"}
+    return {"mensagem": "Se o e-mail estiver cadastrado, você receberá um código em breve"}
+
+
+@router.post("/verificar-codigo")
+async def verificar_codigo(
+    payload: VerificarCodigoRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """Verifica se o código de 6 dígitos é válido."""
+    result = await db.execute(select(Usuario).where(Usuario.email == payload.email))
+    usuario = result.scalar_one_or_none()
+
+    if not usuario or usuario.reset_senha_token != payload.codigo:
+        raise HTTPException(status_code=400, detail="Código inválido")
+
+    if usuario.reset_senha_expira < datetime.now(timezone.utc):
+        raise HTTPException(status_code=400, detail="Código expirado. Solicite um novo.")
+
+    return {"mensagem": "Código válido", "valido": True}
+
+
+@router.post("/nova-senha-codigo")
+async def nova_senha_com_codigo(
+    payload: NovaSenhaComCodigoRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """Redefine a senha usando o código de 6 dígitos."""
+    result = await db.execute(select(Usuario).where(Usuario.email == payload.email))
+    usuario = result.scalar_one_or_none()
+
+    if not usuario or usuario.reset_senha_token != payload.codigo:
+        raise HTTPException(status_code=400, detail="Código inválido")
+
+    if usuario.reset_senha_expira < datetime.now(timezone.utc):
+        raise HTTPException(status_code=400, detail="Código expirado")
+
+    if len(payload.nova_senha) < 6:
+        raise HTTPException(status_code=400, detail="Senha deve ter pelo menos 6 caracteres")
+
+    usuario.senha_hash = get_password_hash(payload.nova_senha)
+    usuario.reset_senha_token = None
+    usuario.reset_senha_expira = None
+    await db.flush()
+    return {"mensagem": "Senha alterada com sucesso"}
 
 
 @router.post("/nova-senha")

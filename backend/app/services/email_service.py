@@ -118,3 +118,28 @@ async def enviar_alerta_trial_expirando(email: str, nome: str, dias: int) -> boo
     except Exception as e:
         print(f"[Email] Erro ao enviar alerta trial: {e}")
         return False
+
+
+async def enviar_codigo_reset(email: str, nome: str, codigo: str) -> bool:
+    """Envia código de 6 dígitos para reset de senha."""
+    _init()
+    try:
+        resend.Emails.send({
+            "from": settings.EMAIL_FROM,
+            "to": [email],
+            "subject": f"Seu código de verificação: {codigo}",
+            "html": f"""
+            <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px">
+              <h2 style="color:#6366f1">Redefinir senha — Orbita</h2>
+              <p>Olá, {nome}! Use o código abaixo para redefinir sua senha:</p>
+              <div style="background:#f3f4f6;border-radius:12px;padding:24px;text-align:center;margin:24px 0">
+                <span style="font-size:40px;font-weight:bold;letter-spacing:12px;color:#1e40af">{codigo}</span>
+              </div>
+              <p style="color:#888;font-size:13px">Este código expira em 1 hora. Se não solicitou, ignore este email.</p>
+            </div>
+            """,
+        })
+        return True
+    except Exception as e:
+        print(f"[Email] Erro ao enviar código: {e}")
+        return False
