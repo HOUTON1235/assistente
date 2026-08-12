@@ -387,7 +387,15 @@ async def esqueci_senha(
         usuario.reset_senha_token = codigo
         usuario.reset_senha_expira = datetime.now(timezone.utc) + timedelta(hours=1)
         await db.flush()
-        background_tasks.add_task(enviar_codigo_reset, usuario.email, usuario.nome, codigo)
+
+        # Tenta enviar email — se falhar, loga o código
+        enviado = await enviar_codigo_reset(usuario.email, usuario.nome, codigo)
+        if not enviado:
+            # Email falhou — loga o código para o admin ver no Railway
+            print(f"[RESET SENHA] Email falhou. Código para {usuario.email}: {codigo}")
+            # Em desenvolvimento, retorna o código na resposta
+            if settings.ENVIRONMENT == "development":
+                return {"mensagem": "Email indisponível (dev mode)", "codigo_debug": codigo}
 
     return {"mensagem": "Se o e-mail estiver cadastrado, você receberá um código em breve"}
 
