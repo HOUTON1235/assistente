@@ -1,12 +1,10 @@
 """
-Serviço de email usando Gmail SMTP (grátis, sem domínio necessário).
-Para ativar: gere uma App Password no Gmail:
-  1. Ativa 2FA na conta Google
-  2. Vai em myaccount.google.com/apppasswords
-  3. Cria uma senha de app para "Mail"
-  4. Coloca em GMAIL_USER e GMAIL_APP_PASSWORD nas variáveis de ambiente
+Serviço de email usando Gmail SMTP.
+Usa porta 587 + STARTTLS para compatibilidade com Railway.
+Roda em thread separada para não bloquear o event loop async.
 """
 import smtplib
+import asyncio
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from app.core.config import settings
@@ -15,14 +13,13 @@ from app.core.logging import get_logger
 logger = get_logger("email")
 
 
-def _enviar_gmail(to: str, subject: str, html: str) -> bool:
-    """Envia email via Gmail SMTP."""
+def _enviar_gmail_sync(to: str, subject: str, html: str) -> bool:
+    """Envia email via Gmail SMTP porta 587 (STARTTLS) — síncrono."""
     gmail_user = getattr(settings, 'GMAIL_USER', '')
     gmail_pass = getattr(settings, 'GMAIL_APP_PASSWORD', '')
 
     if not gmail_user or not gmail_pass:
-        logger.warning(f"[Email] GMAIL_USER ou GMAIL_APP_PASSWORD não configurados. Email não enviado para {to}")
-        logger.info(f"[Email] Subject: {subject}")
+        logger.warning(f"[Email] GMAIL não configurado. Email não enviado para {to}")
         return False
 
     try:
@@ -32,15 +29,24 @@ def _enviar_gmail(to: str, subject: str, html: str) -> bool:
         msg['To']      = to
         msg.attach(MIMEText(html, 'html'))
 
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+        with smtplib.SMTP('smtp.gmail.com', 587, timeout=15) as server:
+            server.ehlo()
+            server.starttls()
+            server.ehlo()
             server.login(gmail_user, gmail_pass)
             server.sendmail(gmail_user, to, msg.as_string())
 
-        logger.info(f"[Email] Enviado para {to}: {subject}")
+        logger.info(f"[Email] ✓ Enviado para {to}: {subject}")
         return True
     except Exception as e:
-        logger.error(f"[Email] Erro ao enviar para {to}: {e}")
+        logger.error(f"[Email] ✗ Erro ao enviar para {to}: {e}")
         return False
+
+
+async def _enviar(to: str, subject: str, html: str) -> bool:
+    """Wrapper async — roda SMTP em thread para não bloquear o event loop."""
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(None, _enviar_gmail_sync, to, subject, html)
 
 
 async def enviar_verificacao_email(email: str, nome: str, token: str) -> bool:
@@ -49,14 +55,13 @@ async def enviar_verificacao_email(email: str, nome: str, token: str) -> bool:
     <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px">
       <h2 style="color:#f97316">Olá, {nome}! 👋</h2>
       <p>Obrigado por criar sua conta na <strong>Orbita</strong>.</p>
-      <p>Clique no botão abaixo para verificar seu email:</p>
       <a href="{url}" style="display:inline-block;background:linear-gradient(135deg,#1e40af,#f97316);color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;margin:16px 0">
         Verificar meu email
       </a>
       <p style="color:#888;font-size:13px">Este link expira em 24 horas.</p>
     </div>
     """
-    return _enviar_gmail(email, "Verifique seu email — Orbita", html)
+    return await _enviar(email, "Verifique seu email — Orbita", html)
 
 
 async def enviar_reset_senha(email: str, nome: str, token: str) -> bool:
@@ -71,7 +76,7 @@ async def enviar_reset_senha(email: str, nome: str, token: str) -> bool:
       <p style="color:#888;font-size:13px">Este link expira em 1 hora.</p>
     </div>
     """
-    return _enviar_gmail(email, "Redefinir senha — Orbita", html)
+    return await _enviar(email, "Redefinir senha — Orbita", html)
 
 
 async def enviar_boas_vindas_trial(email: str, nome: str, empresa: str) -> bool:
@@ -86,7 +91,7 @@ async def enviar_boas_vindas_trial(email: str, nome: str, empresa: str) -> bool:
       </a>
     </div>
     """
-    return _enviar_gmail(email, f"Bem-vindo ao Orbita, {nome}! 🚀", html)
+    return await _enviar(email, f"Bem-vindo ao Orbita, {nome}! 🚀", html)
 
 
 async def enviar_alerta_trial_expirando(email: str, nome: str, dias: int) -> bool:
@@ -100,7 +105,7 @@ async def enviar_alerta_trial_expirando(email: str, nome: str, dias: int) -> boo
       </a>
     </div>
     """
-    return _enviar_gmail(email, f"Seu trial expira em {dias} dias — Orbita", html)
+    return await _enviar(email, f"Seu trial expira em {dias} dias — Orbita", html)
 
 
 async def enviar_codigo_reset(email: str, nome: str, codigo: str) -> bool:
@@ -114,4 +119,4 @@ async def enviar_codigo_reset(email: str, nome: str, codigo: str) -> bool:
       <p style="color:#888;font-size:13px">Este código expira em 1 hora. Se não solicitou, ignore este email.</p>
     </div>
     """
-    return _enviar_gmail(email, f"Seu código de verificação: {codigo}", html)
+    return await _enviar(email, f"Seu código de verificação: {codigo}", html)
