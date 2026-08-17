@@ -1,52 +1,39 @@
 """
-Serviço de email usando Gmail SMTP.
-Usa porta 587 + STARTTLS para compatibilidade com Railway.
-Roda em thread separada para não bloquear o event loop async.
+Serviço de email usando Resend API.
 """
-import smtplib
-import asyncio
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+import resend
 from app.core.config import settings
 from app.core.logging import get_logger
 
 logger = get_logger("email")
 
 
-def _enviar_gmail_sync(to: str, subject: str, html: str) -> bool:
-    """Envia email via Gmail SMTP porta 587 (STARTTLS) — síncrono."""
-    gmail_user = getattr(settings, 'GMAIL_USER', '')
-    gmail_pass = getattr(settings, 'GMAIL_APP_PASSWORD', '')
+def _init():
+    resend.api_key = settings.RESEND_API_KEY
 
-    if not gmail_user or not gmail_pass:
-        logger.warning(f"[Email] GMAIL não configurado. Email não enviado para {to}")
-        return False
 
+def _from_email():
+    """Retorna o email remetente correto para o Resend."""
+    # Resend no plano free só aceita enviar DO email da conta cadastrada
+    # ou de domínio verificado. Usa o EMAIL_FROM das configurações.
+    return settings.EMAIL_FROM
+
+
+async def _enviar(to: str, subject: str, html: str) -> bool:
+    """Envia email via Resend API."""
+    _init()
     try:
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = subject
-        msg['From']    = f"Orbita <{gmail_user}>"
-        msg['To']      = to
-        msg.attach(MIMEText(html, 'html'))
-
-        with smtplib.SMTP('smtp.gmail.com', 587, timeout=15) as server:
-            server.ehlo()
-            server.starttls()
-            server.ehlo()
-            server.login(gmail_user, gmail_pass)
-            server.sendmail(gmail_user, to, msg.as_string())
-
+        resend.Emails.send({
+            "from": _from_email(),
+            "to": [to],
+            "subject": subject,
+            "html": html,
+        })
         logger.info(f"[Email] ✓ Enviado para {to}: {subject}")
         return True
     except Exception as e:
         logger.error(f"[Email] ✗ Erro ao enviar para {to}: {e}")
         return False
-
-
-async def _enviar(to: str, subject: str, html: str) -> bool:
-    """Wrapper async — roda SMTP em thread para não bloquear o event loop."""
-    loop = asyncio.get_event_loop()
-    return await loop.run_in_executor(None, _enviar_gmail_sync, to, subject, html)
 
 
 async def enviar_verificacao_email(email: str, nome: str, token: str) -> bool:
@@ -116,7 +103,7 @@ async def enviar_codigo_reset(email: str, nome: str, codigo: str) -> bool:
       <div style="background:#f3f4f6;border-radius:12px;padding:24px;text-align:center;margin:24px 0">
         <span style="font-size:40px;font-weight:bold;letter-spacing:12px;color:#1e40af">{codigo}</span>
       </div>
-      <p style="color:#888;font-size:13px">Este código expira em 1 hora. Se não solicitou, ignore este email.</p>
+      <p style="color:#888;font-size:13px">Este código expira em 1 hora.</p>
     </div>
     """
     return await _enviar(email, f"Seu código de verificação: {codigo}", html)
