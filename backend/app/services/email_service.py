@@ -13,10 +13,8 @@ def _init():
 
 
 def _from_email():
-    """Retorna o email remetente correto para o Resend."""
-    # Resend no plano free só aceita enviar DO email da conta cadastrada
-    # ou de domínio verificado. Usa o EMAIL_FROM das configurações.
-    return settings.EMAIL_FROM
+    """Retorna o email remetente."""
+    return settings.EMAIL_FROM or "Orbita <onboarding@resend.dev>"
 
 
 async def _enviar(to: str, subject: str, html: str) -> bool:
@@ -34,7 +32,6 @@ async def _enviar(to: str, subject: str, html: str) -> bool:
     except Exception as e:
         logger.error(f"[Email] ✗ Erro ao enviar para {to}: {e}")
         return False
-
 
 async def enviar_verificacao_email(email: str, nome: str, token: str) -> bool:
     url = f"{settings.FRONTEND_URL}/verificar-email?token={token}"

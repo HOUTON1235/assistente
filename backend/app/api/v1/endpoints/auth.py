@@ -387,10 +387,14 @@ async def esqueci_senha(
         usuario.reset_senha_expira = datetime.now(timezone.utc) + timedelta(hours=1)
         await db.flush()
 
-        enviado = await enviar_codigo_reset(usuario.email, usuario.nome, codigo)
+        try:
+            enviado = await enviar_codigo_reset(usuario.email, usuario.nome, codigo)
+        except Exception as e:
+            logger.error(f"[RESET] Exceção ao enviar email: {e}")
+            enviado = False
+
         if not enviado:
             logger.warning(f"[RESET] Email falhou para {usuario.email}. Código: {codigo}")
-            # Retorna o código na resposta para não bloquear o usuário
             return {"mensagem": "Email indisponível no momento.", "codigo": codigo}
 
     return {"mensagem": "Se o e-mail estiver cadastrado, você receberá um código em breve"}
