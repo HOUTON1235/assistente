@@ -20,7 +20,14 @@ function EsqueciSenhaForm() {
     e.preventDefault();
     setErro(""); setLoading(true);
     try {
-      await api.post("/auth/esqueci-senha", { email });
+      const res = await api.post("/auth/esqueci-senha", { email });
+      // Se email falhou, o backend retorna o código diretamente
+      if (res.data.codigo) {
+        setCodigo(res.data.codigo);
+        setStep("codigo");
+        setErro("⚠️ Email indisponível. Use o código abaixo (visível só agora):");
+        return;
+      }
       setStep("codigo");
     } catch { setErro("Erro ao enviar. Tente novamente."); }
     finally { setLoading(false); }
