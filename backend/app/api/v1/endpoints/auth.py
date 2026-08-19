@@ -433,8 +433,8 @@ async def nova_senha_com_codigo(
     if usuario.reset_senha_expira < datetime.now(timezone.utc):
         raise HTTPException(status_code=400, detail="Código expirado")
 
-    if len(payload.nova_senha) < 6:
-        raise HTTPException(status_code=400, detail="Senha deve ter pelo menos 6 caracteres")
+    if len(payload.nova_senha) < 8:
+        raise HTTPException(status_code=400, detail="Senha deve ter pelo menos 8 caracteres")
 
     usuario.senha_hash = get_password_hash(payload.nova_senha)
     usuario.reset_senha_token = None
@@ -456,8 +456,8 @@ async def nova_senha(payload: NovaSenhaRequest, db: AsyncSession = Depends(get_d
     if usuario.reset_senha_expira < datetime.now(timezone.utc):
         raise HTTPException(status_code=400, detail="Token expirado. Solicite um novo.")
 
-    if len(payload.nova_senha) < 6:
-        raise HTTPException(status_code=400, detail="Senha deve ter pelo menos 6 caracteres")
+    if len(payload.nova_senha) < 8:
+        raise HTTPException(status_code=400, detail="Senha deve ter pelo menos 8 caracteres")
 
     usuario.senha_hash = get_password_hash(payload.nova_senha)
     usuario.reset_senha_token = None
