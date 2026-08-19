@@ -43,7 +43,6 @@ pytz==2024.2
 
 # Email
 resend==2.32.2
-mailersend==2.0.3
 
 # Pagamentos
 mercadopago==3.3.0
