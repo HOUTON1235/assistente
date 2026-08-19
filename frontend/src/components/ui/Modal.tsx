@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { X } from "lucide-react";
+import { D } from "@/lib/design";
 
 interface ModalProps {
   aberto: boolean;
@@ -13,30 +14,27 @@ interface ModalProps {
 
 export default function Modal({ aberto, onFechar, titulo, children, largura = "max-w-md" }: ModalProps) {
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onFechar(); };
-    document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
+    const h = (e: KeyboardEvent) => { if (e.key === "Escape") onFechar(); };
+    document.addEventListener("keydown", h);
+    return () => document.removeEventListener("keydown", h);
   }, [onFechar]);
 
   if (!aberto) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onFechar} />
-      <div className={`relative w-full ${largura} rounded-2xl shadow-2xl`}
-        style={{ background: "#111827", border: "1px solid #1f2937" }}>
-        <div className="flex items-center justify-between px-5 py-4"
-          style={{ borderBottom: "1px solid #1f2937" }}>
-          <h2 className="font-semibold text-white">{titulo}</h2>
+    <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+      <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)" }} onClick={onFechar} />
+      <div className={`relative w-full ${largura}`} style={{ background: D.surface, border: `1px solid ${D.border}`, borderRadius: 14, boxShadow: "0 16px 48px rgba(0,0,0,0.8)" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: `1px solid ${D.border}` }}>
+          <h2 style={{ fontWeight: 600, fontSize: 15, color: D.text, margin: 0 }}>{titulo}</h2>
           <button onClick={onFechar}
-            className="w-7 h-7 rounded-lg flex items-center justify-center transition-all"
-            style={{ color: "#6b7280" }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#f1f5f9"; (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)"; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "#6b7280"; (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
-            <X size={15} />
+            style={{ width: 28, height: 28, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", border: "none", cursor: "pointer", color: D.muted }}
+            onMouseEnter={(e: any) => { e.currentTarget.style.background = D.surface2; e.currentTarget.style.color = D.text; }}
+            onMouseLeave={(e: any) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = D.muted; }}>
+            <X size={14} />
           </button>
         </div>
-        <div className="p-5">{children}</div>
+        <div style={{ padding: 20 }}>{children}</div>
       </div>
     </div>
   );

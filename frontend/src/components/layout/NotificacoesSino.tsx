@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Bell, X, CheckCheck, AlertTriangle, Package, Clock, CreditCard, Info } from "lucide-react";
+import { Bell, X, CheckCheck } from "lucide-react";
 import { api } from "@/lib/api";
+import { D } from "@/lib/design";
 
 interface Notif {
   id: string;
@@ -14,135 +15,75 @@ interface Notif {
   criado_em: string;
 }
 
-const SURF = "#111827";
-const BORD = "#1f2937";
-
-const icones: Record<string, React.ReactNode> = {
-  vencimento:   <AlertTriangle size={13} style={{ color: "#f97316" }} />,
-  estoque_baixo:<Package      size={13} style={{ color: "#facc15" }} />,
-  trial:        <Clock        size={13} style={{ color: "#60a5fa" }} />,
-  pagamento:    <CreditCard   size={13} style={{ color: "#4ade80" }} />,
-  sistema:      <Info         size={13} style={{ color: "#9ca3af" }} />,
-};
-
 export default function NotificacoesSino() {
-  const [aberto, setAberto] = useState(false);
-  const [notifs, setNotifs] = useState<Notif[]>([]);
+  const [aberto, setAberto]     = useState(false);
+  const [notifs, setNotifs]     = useState<Notif[]>([]);
   const [naoLidas, setNaoLidas] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
 
   const carregar = async () => {
     try {
-      const res = await api.get("/notificacoes/");
-      setNotifs(res.data.notificacoes);
-      setNaoLidas(res.data.total_nao_lidas);
+      const r = await api.get("/notificacoes/");
+      setNotifs(r.data.notificacoes);
+      setNaoLidas(r.data.total_nao_lidas);
     } catch {}
   };
 
   useEffect(() => {
     carregar();
-    const interval = setInterval(carregar, 60000);
-    return () => clearInterval(interval);
+    const t = setInterval(carregar, 60000);
+    return () => clearInterval(t);
   }, []);
 
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setAberto(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+    const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setAberto(false); };
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
   }, []);
 
-  const marcarTodasLidas = async () => {
+  const marcarTodas = async () => {
     await api.patch("/notificacoes/marcar-todas-lidas");
     setNaoLidas(0);
-    setNotifs(prev => prev.map(n => ({ ...n, lida: true })));
-  };
-
-  const marcarLida = async (id: string) => {
-    await api.patch(`/notificacoes/${id}/lida`);
-    setNotifs(prev => prev.map(n => n.id === id ? { ...n, lida: true } : n));
-    setNaoLidas(prev => Math.max(0, prev - 1));
+    setNotifs(p => p.map(n => ({ ...n, lida: true })));
   };
 
   return (
-    <div ref={ref} className="relative">
-      <button
-        onClick={() => setAberto(!aberto)}
-        className="relative w-8 h-8 rounded-lg flex items-center justify-center transition-all"
-        style={{ color: "#6b7280" }}
-        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#f1f5f9"; (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)"; }}
-        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "#6b7280"; (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
-        <Bell size={16} />
+    <div ref={ref} style={{ position: "relative" }}>
+      <button onClick={() => setAberto(!aberto)}
+        style={{ position: "relative", width: 32, height: 32, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", border: "none", cursor: "pointer", color: D.muted }}
+        onMouseEnter={(e: any) => { e.currentTarget.style.background = D.surface; e.currentTarget.style.color = D.text; }}
+        onMouseLeave={(e: any) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = D.muted; }}>
+        <Bell size={15} strokeWidth={1.5} />
         {naoLidas > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 w-4 h-4 text-white text-[10px] rounded-full flex items-center justify-center font-bold"
-            style={{ background: "#f97316" }}>
-            {naoLidas > 9 ? "9+" : naoLidas}
-          </span>
+          <span style={{ position: "absolute", top: 5, right: 5, width: 6, height: 6, borderRadius: "50%", background: D.accent }} />
         )}
       </button>
 
       {aberto && (
-        <div className="absolute right-0 top-10 w-80 rounded-xl shadow-2xl z-50 overflow-hidden"
-          style={{ background: SURF, border: `1px solid ${BORD}` }}>
-          {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3"
-            style={{ borderBottom: `1px solid ${BORD}` }}>
-            <p className="text-sm font-medium text-white">
-              Notificações{" "}
-              {naoLidas > 0 && <span className="text-xs" style={{ color: "#6b7280" }}>({naoLidas} novas)</span>}
-            </p>
-            <div className="flex items-center gap-2">
+        <div style={{ position: "absolute", right: 0, top: 40, width: 320, background: D.surface, border: `1px solid ${D.border}`, borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.7)", overflow: "hidden", zIndex: 50 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderBottom: `1px solid ${D.border}` }}>
+            <p style={{ fontSize: 13, fontWeight: 600, color: D.text, margin: 0 }}>Notificações</p>
+            <div style={{ display: "flex", gap: 4 }}>
               {naoLidas > 0 && (
-                <button onClick={marcarTodasLidas} title="Marcar todas como lidas"
-                  className="transition-colors"
-                  style={{ color: "#6b7280" }}
-                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = "#f97316"}
-                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = "#6b7280"}>
-                  <CheckCheck size={15} />
+                <button onClick={marcarTodas} style={{ background: "none", border: "none", cursor: "pointer", color: D.muted, padding: 4 }}>
+                  <CheckCheck size={13} />
                 </button>
               )}
-              <button onClick={() => setAberto(false)}
-                style={{ color: "#6b7280" }}
-                onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = "#f1f5f9"}
-                onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = "#6b7280"}>
-                <X size={15} />
+              <button onClick={() => setAberto(false)} style={{ background: "none", border: "none", cursor: "pointer", color: D.muted, padding: 4 }}>
+                <X size={13} />
               </button>
             </div>
           </div>
-
-          {/* Lista */}
-          <div className="max-h-80 overflow-y-auto">
+          <div style={{ maxHeight: 320, overflowY: "auto" }}>
             {notifs.length === 0 ? (
-              <div className="py-8 text-center text-sm" style={{ color: "#6b7280" }}>
-                <Bell size={24} className="mx-auto mb-2 opacity-30" />
-                Nenhuma notificação
-              </div>
+              <p style={{ fontSize: 13, color: D.muted, textAlign: "center", padding: "28px 16px", margin: 0 }}>Nenhuma notificação</p>
             ) : (
               notifs.map(n => (
-                <div key={n.id}
-                  onClick={() => { marcarLida(n.id); if (n.link) window.location.href = n.link; }}
-                  className="flex gap-3 px-4 py-3 cursor-pointer transition-colors"
-                  style={{
-                    borderBottom: `1px solid ${BORD}`,
-                    background: !n.lida ? "rgba(249,115,22,0.04)" : "transparent",
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.background = BORD)}
-                  onMouseLeave={e => (e.currentTarget.style.background = !n.lida ? "rgba(249,115,22,0.04)" : "transparent")}>
-                  <div className="mt-0.5 flex-shrink-0">{icones[n.tipo] || icones.sistema}</div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium" style={{ color: n.lida ? "#6b7280" : "#f1f5f9" }}>
-                      {n.titulo}
-                    </p>
-                    <p className="text-xs mt-0.5 leading-relaxed" style={{ color: "#9ca3af" }}>{n.mensagem}</p>
-                    <p className="text-xs mt-1" style={{ color: "#4b5563" }}>
-                      {new Date(n.criado_em).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
-                    </p>
-                  </div>
-                  {!n.lida && (
-                    <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0"
-                      style={{ background: "#f97316" }} />
-                  )}
+                <div key={n.id} style={{ padding: "12px 16px", borderBottom: `1px solid ${D.border}`, background: !n.lida ? `${D.accent}08` : "transparent", cursor: "pointer" }}
+                  onMouseEnter={(e: any) => e.currentTarget.style.background = D.surface2}
+                  onMouseLeave={(e: any) => e.currentTarget.style.background = !n.lida ? `${D.accent}08` : "transparent"}>
+                  <p style={{ fontSize: 13, fontWeight: n.lida ? 400 : 500, color: n.lida ? D.muted : D.text, margin: "0 0 2px" }}>{n.titulo}</p>
+                  <p style={{ fontSize: 12, color: D.muted, margin: 0, lineHeight: 1.5 }}>{n.mensagem}</p>
                 </div>
               ))
             )}

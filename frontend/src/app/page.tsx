@@ -1,99 +1,111 @@
 import Link from "next/link";
-import Logo from "@/components/brand/Logo";
+import { D } from "@/lib/design";
 
-const funcionalidades = [
-  { icone: "💬", titulo: "Chat com IA", desc: "Converse em linguagem natural. O sistema executa." },
-  { icone: "💰", titulo: "Financeiro", desc: "Receitas, despesas, fluxo de caixa e cobranças automáticas." },
-  { icone: "📦", titulo: "Estoque", desc: "Controle entradas, saídas e receba alertas de reposição." },
-  { icone: "👥", titulo: "Clientes", desc: "CRM integrado com histórico e pendências." },
-  { icone: "📊", titulo: "Relatórios", desc: "DRE, análises e previsões geradas pela IA." },
-  { icone: "🔔", titulo: "Alertas", desc: "Vencimentos e avisos por email e no app." },
+const features = [
+  { icon: "⌘", label: "Chat com IA", desc: "Converse em linguagem natural. A Orbita executa." },
+  { icon: "◈", label: "Financeiro",  desc: "Receitas, despesas e fluxo de caixa em tempo real." },
+  { icon: "▦", label: "Estoque",     desc: "Controle entradas, saídas e alertas de reposição." },
+  { icon: "◎", label: "Clientes",    desc: "CRM integrado com histórico e pendências." },
+  { icon: "⊞", label: "Relatórios",  desc: "DRE e análises geradas automaticamente." },
+  { icon: "◉", label: "WhatsApp",    desc: "Atendimento automático adaptado ao seu negócio." },
 ];
 
 export default function Home() {
   return (
-    <main className="min-h-screen text-white" style={{ background: "#0a0f1e" }}>
-      {/* Header */}
-      <header className="flex items-center justify-between px-8 py-5" style={{ borderBottom: "1px solid #1f2937" }}>
-        <Logo size="md" />
-        <div className="flex items-center gap-3">
-          <Link href="/login" className="text-sm text-gray-400 hover:text-white transition-colors px-4 py-2">
-            Entrar
-          </Link>
-          <Link href="/register"
-            className="text-sm font-medium text-white px-4 py-2 rounded-lg transition-colors"
-            style={{ background: "#f97316" }}>
-            Começar grátis
-          </Link>
+    <main style={{ background: D.bg, color: D.text, minHeight: "100vh" }}>
+
+      {/* Nav */}
+      <nav style={{ borderBottom: `1px solid ${D.border}`, background: "rgba(0,0,0,0.8)", backdropFilter: "blur(12px)", position: "sticky", top: 0, zIndex: 50 }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px", height: 56, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span style={{ fontWeight: 700, fontSize: 17, letterSpacing: "-0.3px" }}>Orbita</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <Link href="/login"
+              style={{ color: D.muted, fontSize: 14, padding: "6px 14px", borderRadius: 8, textDecoration: "none", transition: "color 0.15s" }}
+              onMouseEnter={(e: any) => e.currentTarget.style.color = D.text}
+              onMouseLeave={(e: any) => e.currentTarget.style.color = D.muted}>
+              Entrar
+            </Link>
+            <Link href="/register"
+              style={{ background: D.text, color: D.bg, fontSize: 14, fontWeight: 600, padding: "7px 16px", borderRadius: 8, textDecoration: "none" }}>
+              Começar grátis
+            </Link>
+          </div>
         </div>
-      </header>
+      </nav>
 
       {/* Hero */}
-      <section className="max-w-4xl mx-auto text-center px-6 pt-24 pb-20">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm mb-8 font-medium"
-          style={{ background: "rgba(249,115,22,0.1)", border: "1px solid rgba(249,115,22,0.3)", color: "#f97316" }}>
-          🚀 30 dias grátis, sem cartão
+      <section style={{ maxWidth: 720, margin: "0 auto", padding: "120px 24px 80px", textAlign: "center" }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 14px", borderRadius: 100, border: `1px solid ${D.border}`, marginBottom: 32, fontSize: 12, color: D.muted }}>
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: D.success, display: "inline-block" }} />
+          30 dias grátis · sem cartão
         </div>
 
-        <h1 className="text-5xl font-bold leading-tight tracking-tight mb-6">
-          Seu operador administrativo
-          <br />
-          <span style={{ color: "#f97316" }}>com Inteligência Artificial</span>
+        <h1 style={{ fontSize: "clamp(36px, 6vw, 64px)", fontWeight: 800, letterSpacing: "-2px", lineHeight: 1.05, margin: "0 0 20px 0", color: D.text }}>
+          O operador inteligente<br />
+          <span style={{ color: D.accent }}>da sua empresa</span>
         </h1>
 
-        <p className="text-xl text-gray-400 leading-relaxed max-w-2xl mx-auto mb-10">
-          Não é um chatbot. É o sistema que gerencia sua empresa.
-          Fale com a Orbita e ela trabalha por você.
+        <p style={{ fontSize: 18, color: D.muted, lineHeight: 1.6, margin: "0 auto 48px", maxWidth: 480 }}>
+          Fale com a Orbita e ela gerencia. Finanças, estoque, clientes e WhatsApp — tudo em um só lugar.
         </p>
 
-        <div className="flex items-center justify-center gap-4">
+        <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
           <Link href="/register"
-            className="flex items-center gap-2 text-white font-semibold px-7 py-3.5 rounded-xl text-base transition-all hover:opacity-90"
-            style={{ background: "linear-gradient(135deg, #1e40af, #f97316)" }}>
+            style={{ background: D.accent, color: "#fff", fontWeight: 600, fontSize: 15, padding: "11px 28px", borderRadius: 10, textDecoration: "none" }}>
             Criar conta grátis →
           </Link>
           <Link href="/login"
-            className="text-sm text-gray-400 hover:text-white px-5 py-3.5 rounded-xl transition-colors"
-            style={{ border: "1px solid #1f2937" }}>
-            Já tenho conta
+            style={{ background: D.surface, color: D.text2, fontSize: 15, padding: "11px 28px", borderRadius: 10, border: `1px solid ${D.border}`, textDecoration: "none" }}>
+            Fazer login
           </Link>
         </div>
       </section>
 
-      {/* Funcionalidades */}
-      <section className="max-w-5xl mx-auto px-6 pb-24">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {funcionalidades.map((f) => (
-            <div key={f.titulo}
-              className="p-5 rounded-xl transition-colors hover:border-blue-800"
-              style={{ background: "#111827", border: "1px solid #1f2937" }}>
-              <span className="text-2xl">{f.icone}</span>
-              <h3 className="font-semibold text-white mt-3 mb-1">{f.titulo}</h3>
-              <p className="text-sm text-gray-400 leading-relaxed">{f.desc}</p>
+      {/* Divider */}
+      <div style={{ maxWidth: 1100, margin: "0 auto 80px", padding: "0 24px" }}>
+        <div style={{ height: 1, background: `linear-gradient(90deg, transparent, ${D.border}, transparent)` }} />
+      </div>
+
+      {/* Features */}
+      <section style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px 120px" }}>
+        <p style={{ fontSize: 12, fontWeight: 600, letterSpacing: "2px", color: D.muted, textTransform: "uppercase", textAlign: "center", marginBottom: 48 }}>
+          Tudo que sua empresa precisa
+        </p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 1, border: `1px solid ${D.border}`, borderRadius: 14, overflow: "hidden" }}>
+          {features.map((f, i) => (
+            <div key={f.label}
+              style={{ padding: "32px 28px", borderRight: i % 2 === 0 ? `1px solid ${D.border}` : "none", borderBottom: i < 4 ? `1px solid ${D.border}` : "none" }}
+              onMouseEnter={(e: any) => e.currentTarget.style.background = D.surface}
+              onMouseLeave={(e: any) => e.currentTarget.style.background = "transparent"}>
+              <div style={{ fontSize: 24, marginBottom: 14, color: D.accent }}>{f.icon}</div>
+              <h3 style={{ fontSize: 15, fontWeight: 600, margin: "0 0 8px", color: D.text }}>{f.label}</h3>
+              <p style={{ fontSize: 13, color: D.muted, margin: 0, lineHeight: 1.6 }}>{f.desc}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* CTA final */}
-      <section className="max-w-2xl mx-auto text-center px-6 pb-24">
-        <div className="p-10 rounded-2xl" style={{ background: "#111827", border: "1px solid #1f2937" }}>
-          <h2 className="text-2xl font-bold mb-3">Pronto para escalar sua empresa?</h2>
-          <p className="text-gray-400 mb-6">Comece hoje com 30 dias gratuitos. Sem cartão.</p>
+      {/* CTA */}
+      <section style={{ borderTop: `1px solid ${D.border}`, padding: "80px 24px" }}>
+        <div style={{ maxWidth: 480, margin: "0 auto", textAlign: "center" }}>
+          <h2 style={{ fontSize: 32, fontWeight: 700, letterSpacing: "-0.8px", margin: "0 0 16px", color: D.text }}>
+            Pronto para começar?
+          </h2>
+          <p style={{ color: D.muted, fontSize: 15, margin: "0 0 32px" }}>
+            30 dias gratuitos. Sem cartão de crédito.
+          </p>
           <Link href="/register"
-            className="inline-block text-white font-semibold px-8 py-3 rounded-xl transition-all hover:opacity-90"
-            style={{ background: "#f97316" }}>
+            style={{ display: "inline-block", background: D.text, color: D.bg, fontWeight: 700, fontSize: 15, padding: "12px 32px", borderRadius: 10, textDecoration: "none" }}>
             Começar agora
           </Link>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="text-center pb-8 text-xs text-gray-600" style={{ borderTop: "1px solid #1f2937" }}>
-        <div className="pt-6">
-          <Logo size="sm" />
-          <p className="mt-2">© 2026 Orbita. Todos os direitos reservados.</p>
-        </div>
+      <footer style={{ borderTop: `1px solid ${D.border}`, padding: "32px 24px", textAlign: "center" }}>
+        <p style={{ fontSize: 12, color: D.muted2, margin: 0 }}>
+          © 2026 Orbita · Criado por <span style={{ color: D.muted }}>Marcelo Rian (Houton)</span>
+        </p>
       </footer>
     </main>
   );
