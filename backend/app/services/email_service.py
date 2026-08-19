@@ -1,37 +1,50 @@
 """
-Serviço de email usando Resend API.
+Serviço de email usando Mailersend API.
+300 emails/dia grátis, funciona sem domínio próprio.
 """
-import resend
+import requests as req_lib
 from app.core.config import settings
 from app.core.logging import get_logger
 
 logger = get_logger("email")
 
-
-def _init():
-    resend.api_key = settings.RESEND_API_KEY
+MAILERSEND_URL = "https://api.mailersend.com/v1/email"
 
 
-def _from_email():
-    """Retorna o email remetente."""
-    return settings.EMAIL_FROM or "Orbita <onboarding@resend.dev>"
+async def _enviar(to: str, nome_to: str, subject: str, html: str) -> bool:
+    """Envia email via Mailersend API."""
+    api_key  = getattr(settings, 'MAILERSEND_API_KEY', '')
+    from_email = getattr(settings, 'MAILERSEND_FROM', 'noreply@test-q3enl6k1jm042vwr.mlsender.net')
+    from_name  = getattr(settings, 'MAILERSEND_FROM_NAME', 'Orbita')
 
-
-async def _enviar(to: str, subject: str, html: str) -> bool:
-    """Envia email via Resend API."""
-    _init()
-    try:
-        resend.Emails.send({
-            "from": _from_email(),
-            "to": [to],
-            "subject": subject,
-            "html": html,
-        })
-        logger.info(f"[Email] ✓ Enviado para {to}: {subject}")
-        return True
-    except Exception as e:
-        logger.error(f"[Email] ✗ Erro ao enviar para {to}: {e}")
+    if not api_key:
+        logger.warning(f"[Email] MAILERSEND_API_KEY não configurado")
         return False
+
+    payload = {
+        "from":    {"email": from_email, "name": from_name},
+        "to":      [{"email": to, "name": nome_to or to}],
+        "subject": subject,
+        "html":    html,
+    }
+
+    try:
+        r = req_lib.post(
+            MAILERSEND_URL,
+            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+            json=payload,
+            timeout=10,
+        )
+        if r.status_code in (200, 201, 202):
+            logger.info(f"[Email] ✓ Enviado para {to}: {subject}")
+            return True
+        else:
+            logger.error(f"[Email] ✗ Erro {r.status_code} ao enviar para {to}: {r.text[:200]}")
+            return False
+    except Exception as e:
+        logger.error(f"[Email] ✗ Exceção ao enviar para {to}: {e}")
+        return False
+
 
 async def enviar_verificacao_email(email: str, nome: str, token: str) -> bool:
     url = f"{settings.FRONTEND_URL}/verificar-email?token={token}"
@@ -45,7 +58,7 @@ async def enviar_verificacao_email(email: str, nome: str, token: str) -> bool:
       <p style="color:#888;font-size:13px">Este link expira em 24 horas.</p>
     </div>
     """
-    return await _enviar(email, "Verifique seu email — Orbita", html)
+    return await _enviar(email, nome, "Verifique seu email — Orbita", html)
 
 
 async def enviar_reset_senha(email: str, nome: str, token: str) -> bool:
@@ -60,7 +73,7 @@ async def enviar_reset_senha(email: str, nome: str, token: str) -> bool:
       <p style="color:#888;font-size:13px">Este link expira em 1 hora.</p>
     </div>
     """
-    return await _enviar(email, "Redefinir senha — Orbita", html)
+    return await _enviar(email, nome, "Redefinir senha — Orbita", html)
 
 
 async def enviar_boas_vindas_trial(email: str, nome: str, empresa: str) -> bool:
@@ -75,7 +88,7 @@ async def enviar_boas_vindas_trial(email: str, nome: str, empresa: str) -> bool:
       </a>
     </div>
     """
-    return await _enviar(email, f"Bem-vindo ao Orbita, {nome}! 🚀", html)
+    return await _enviar(email, nome, f"Bem-vindo ao Orbita, {nome}! 🚀", html)
 
 
 async def enviar_alerta_trial_expirando(email: str, nome: str, dias: int) -> bool:
@@ -89,7 +102,7 @@ async def enviar_alerta_trial_expirando(email: str, nome: str, dias: int) -> boo
       </a>
     </div>
     """
-    return await _enviar(email, f"Seu trial expira em {dias} dias — Orbita", html)
+    return await _enviar(email, nome, f"Seu trial expira em {dias} dias — Orbita", html)
 
 
 async def enviar_codigo_reset(email: str, nome: str, codigo: str) -> bool:
@@ -103,4 +116,4 @@ async def enviar_codigo_reset(email: str, nome: str, codigo: str) -> bool:
       <p style="color:#888;font-size:13px">Este código expira em 1 hora.</p>
     </div>
     """
-    return await _enviar(email, f"Seu código de verificação: {codigo}", html)
+    return await _enviar(email, nome, f"Seu código de verificação: {codigo}", html)

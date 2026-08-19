@@ -40,11 +40,12 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str = ""
     OPENAI_MODEL: str = "gpt-4o"
 
-    # Email — Gmail SMTP (grátis)
-    GMAIL_USER: str = ""          # seu@gmail.com
-    GMAIL_APP_PASSWORD: str = ""  # senha de app do Gmail (não é a senha normal)
+    # Email — Mailersend
+    MAILERSEND_API_KEY: str = ""
+    MAILERSEND_FROM: str = "noreply@test-q3enl6k1jm042vwr.mlsender.net"
+    MAILERSEND_FROM_NAME: str = "Orbita"
 
-    # Email — Resend (legado)
+    # Email — legado Resend
     RESEND_API_KEY: str = ""
     EMAIL_FROM: str = "Orbita <noreply@orbita.app>"
 
